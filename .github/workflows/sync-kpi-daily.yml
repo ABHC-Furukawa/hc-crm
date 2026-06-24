@@ -1,0 +1,30 @@
+name: Sync KPI Daily Cache
+
+on:
+  schedule:
+    # JST 02:00 = UTC 17:00 (前日分を同期)
+    - cron: "0 17 * * *"
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Number of past days to sync (default 1)"
+        required: false
+        default: "1"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync activity_metrics_daily
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "APP_URL and CRON_SECRET secrets are required"
+            exit 1
+          fi
+          DAYS="${{ github.event.inputs.days || '1' }}"
+          curl -fsS -X GET \
+            "${APP_URL%/}/api/cron/activity-metrics-daily?days=${DAYS}" \
+            -H "Authorization: Bearer ${CRON_SECRET}"

@@ -490,6 +490,13 @@ export function CandidateForm({ candidate, mode, onSaved }: CandidateFormProps) 
             min={0}
             error={fieldErrors.shoeSize?.[0]}
           />
+          <Field
+            label="服のサイズ"
+            name="clothingSize"
+            placeholder="例: L, LL"
+            defaultValue={val("clothingSize", candidate?.clothingSize ?? "")}
+            error={fieldErrors.clothingSize?.[0]}
+          />
           <SelectField
             label="視力（矯正）"
             name="visionCorrection"

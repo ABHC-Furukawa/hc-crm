@@ -216,6 +216,10 @@ function CandidateProfileView({
             value={candidate.shoeSize != null ? `${candidate.shoeSize}cm` : "—"}
           />
           <ProfileField
+            label="服のサイズ"
+            value={candidate.clothingSize?.trim() || "—"}
+          />
+          <ProfileField
             label="視力（矯正）"
             value={labelOrDash(candidate.visionCorrection, VISION_CORRECTION_LABELS)}
           />

@@ -1,4 +1,19 @@
 import { TenantLimitPolicy, TenantPlan } from "@prisma/client";
+import {
+  TENANT_PLAN_LABELS,
+  TENANT_PLAN_OPTIONS,
+  getTenantPlanLabelFromValue,
+  isTenantPlanValue,
+  type TenantPlanValue,
+} from "@/lib/tenant/plan-options";
+
+export type { TenantPlanValue } from "@/lib/tenant/plan-options";
+export {
+  TENANT_PLAN_LABELS,
+  TENANT_PLAN_OPTIONS,
+  getTenantPlanLabelFromValue,
+  isTenantPlanValue,
+} from "@/lib/tenant/plan-options";
 
 /** 上限 enforcement 対象リソース（users は BLOCK のみ） */
 export type TenantLimitResource = "users" | "callLeads" | "candidates";
@@ -19,7 +34,7 @@ export type TenantPlanConfig = {
  */
 export const TENANT_PLAN_CONFIG: Record<TenantPlan, TenantPlanConfig> = {
   [TenantPlan.FREE]: {
-    label: "無料",
+    label: TENANT_PLAN_LABELS.FREE,
     limits: {
       users: { max: 2, policy: TenantLimitPolicy.BLOCK },
       callLeads: { max: 100, policy: TenantLimitPolicy.BLOCK },
@@ -27,7 +42,7 @@ export const TENANT_PLAN_CONFIG: Record<TenantPlan, TenantPlanConfig> = {
     },
   },
   [TenantPlan.STARTER]: {
-    label: "スターター",
+    label: TENANT_PLAN_LABELS.STARTER,
     limits: {
       users: { max: 5, policy: TenantLimitPolicy.BLOCK },
       callLeads: { max: 500, policy: TenantLimitPolicy.EVICT_OLDEST },
@@ -35,7 +50,7 @@ export const TENANT_PLAN_CONFIG: Record<TenantPlan, TenantPlanConfig> = {
     },
   },
   [TenantPlan.PROFESSIONAL]: {
-    label: "プロフェッショナル",
+    label: TENANT_PLAN_LABELS.PROFESSIONAL,
     limits: {
       users: { max: 20, policy: TenantLimitPolicy.BLOCK },
       callLeads: { max: 2000, policy: TenantLimitPolicy.EVICT_OLDEST },
@@ -43,7 +58,7 @@ export const TENANT_PLAN_CONFIG: Record<TenantPlan, TenantPlanConfig> = {
     },
   },
   [TenantPlan.ENTERPRISE]: {
-    label: "エンタープライズ",
+    label: TENANT_PLAN_LABELS.ENTERPRISE,
     limits: {
       users: { max: 9999, policy: TenantLimitPolicy.BLOCK },
       callLeads: { max: 99999, policy: TenantLimitPolicy.BLOCK },
@@ -76,7 +91,7 @@ export function getTenantPlanConfig(plan: TenantPlan): TenantPlanConfig {
 }
 
 export function getTenantPlanLabel(plan: TenantPlan): string {
-  return TENANT_PLAN_CONFIG[plan].label;
+  return getTenantPlanLabelFromValue(plan as TenantPlanValue);
 }
 
 export function getTenantPlanLimits(
@@ -84,10 +99,3 @@ export function getTenantPlanLimits(
 ): Record<TenantLimitResource, ResourceLimitConfig> {
   return TENANT_PLAN_CONFIG[plan].limits;
 }
-
-export const TENANT_PLAN_OPTIONS = (
-  Object.entries(TENANT_PLAN_CONFIG) as [TenantPlan, TenantPlanConfig][]
-).map(([value, config]) => ({
-  value,
-  label: config.label,
-}));

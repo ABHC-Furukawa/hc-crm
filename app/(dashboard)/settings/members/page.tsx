@@ -1,7 +1,8 @@
+import { UserRole } from "@prisma/client";
 import { canAssignDevelopRole, canManageUsers } from "@/lib/auth/rbac";
 import { requireTenantContext } from "@/lib/tenant/context";
 import { getManagersForTenant, getUsersForTenant } from "@/lib/users/queries";
-import { InviteUserForm } from "@/components/users/invite-user-form";
+import { MemberOnboardingSection } from "@/components/users/member-onboarding-section";
 import { UserTable } from "@/components/users/user-table";
 
 export default async function SettingsMembersPage() {
@@ -17,12 +18,14 @@ export default async function SettingsMembersPage() {
   ]);
 
   const canAssignDevelop = canAssignDevelopRole(user.role);
+  const showDirectCreate = user.role === UserRole.DEVELOP;
 
   return (
     <div className="space-y-6">
-      <InviteUserForm
+      <MemberOnboardingSection
         managers={managers}
         canAssignDevelop={canAssignDevelop}
+        showDirectCreate={showDirectCreate}
       />
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">登録メンバー</h2>

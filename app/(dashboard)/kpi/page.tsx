@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { getKpiDashboardData } from "@/lib/actions/kpi";
 import {
   KPI_DAILY_TABLE_METRICS,
-  KPI_SNAPSHOT_AGGREGATION_HINT,
+  KPI_PIPELINE_PERIOD_AGGREGATION_HINT,
   KPI_TRANSITION_AGGREGATION_HINT,
 } from "@/lib/kpi/constants";
 import { currentYearMonth, formatMonthLabel } from "@/lib/kpi/dates";
@@ -80,7 +80,8 @@ export default async function KpiPage({ searchParams }: PageProps) {
           <div>
             <h2 className="text-lg font-semibold">進行中パイプライン</h2>
             <p className="text-sm text-muted-foreground">
-              {KPI_SNAPSHOT_AGGREGATION_HINT}（{data.snapshotAsOfLabel}）
+              {KPI_PIPELINE_PERIOD_AGGREGATION_HINT}（
+              {formatMonthLabel(data.yearMonth)}）
             </p>
           </div>
           <KpiMetricGrid
@@ -91,9 +92,10 @@ export default async function KpiPage({ searchParams }: PageProps) {
 
         <section className="space-y-3">
           <div>
-            <h2 className="text-lg font-semibold">金額面（万円・累計）</h2>
+            <h2 className="text-lg font-semibold">金額面（万円）</h2>
             <p className="text-sm text-muted-foreground">
-              {KPI_SNAPSHOT_AGGREGATION_HINT}（{data.snapshotAsOfLabel}）
+              {KPI_PIPELINE_PERIOD_AGGREGATION_HINT}（
+              {formatMonthLabel(data.yearMonth)}）
             </p>
           </div>
           <KpiMetricGrid
@@ -107,7 +109,7 @@ export default async function KpiPage({ searchParams }: PageProps) {
           <CardHeader>
             <CardTitle>日次行動量</CardTitle>
             <CardDescription>
-              選択月の日別ステータス遷移件数。上の「スナップ」指標とは集計方式が異なります。
+              選択月の日別ステータス遷移件数
             </CardDescription>
           </CardHeader>
           <CardContent>

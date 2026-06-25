@@ -1,4 +1,4 @@
-import { TenantLimitPolicy, type Prisma } from "@prisma/client";
+import { TenantLimitPolicy, UserRole, type Prisma } from "@prisma/client";
 import {
   TENANT_RESOURCE_LABELS,
   getTenantPlanLimits,
@@ -79,12 +79,35 @@ async function loadTenantPlan(
   });
 }
 
+/** DEVELOP による users 作成はプラン上限を適用しない */
+async function shouldBypassUserLimitForActor(
+  actorUserId: string | null | undefined,
+  resource: TenantLimitResource,
+  tx?: Prisma.TransactionClient
+): Promise<boolean> {
+  if (resource !== "users" || !actorUserId) {
+    return false;
+  }
+
+  const db = tx ?? prisma;
+  const actor = await db.user.findUnique({
+    where: { id: actorUserId },
+    select: { role: true },
+  });
+
+  return actor?.role === UserRole.DEVELOP;
+}
+
 /** 作成前チェック — BLOCK / EVICT 両対応（EVICT は退避不足時フォールバック BLOCK） */
 export async function assertCanCreate(
   tenantId: string,
   resource: TenantLimitResource,
   options: LimitOptions = {}
 ): Promise<void> {
+  if (await shouldBypassUserLimitForActor(options.actorUserId, resource, options.tx)) {
+    return;
+  }
+
   const increment = options.increment ?? 1;
   const tenant = await loadTenantPlan(tenantId, options.tx);
 

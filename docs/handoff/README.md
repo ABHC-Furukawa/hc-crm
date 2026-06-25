@@ -7,10 +7,10 @@
 
 1. **[next-chat-handoff.md](./next-chat-handoff.md)** を開く（貼り付け用指示文）
 2. 新チャットの最初のメッセージに指示文を貼り付ける
-3. 詳細は **[current-state-handoff.md](./current-state-handoff.md)** を参照
+3. 詳細は **[phase-5a-production-handoff.md](./phase-5a-production-handoff.md)** を参照
 
 ```
-@docs/handoff/current-state-handoff.md と @docs/handoff/next-chat-handoff.md を参照して続きを実装してください。
+@docs/handoff/phase-5a-production-handoff.md と @docs/handoff/next-chat-handoff.md を参照して続きを実装してください。
 ```
 
 ## ロードマップ
@@ -26,11 +26,12 @@
 | R1–R3 | ✅ 完了 | [current-state-handoff.md](./current-state-handoff.md) | ロール階層 + DEVELOP テナント横断 |
 | KPI cron | 🔄 コード済 | [current-state-handoff.md](./current-state-handoff.md) | 日次キャッシュ（secret・backfill 未設定） |
 | 4 | ✅ 完了 | [phase-4d-handoff.md](./phase-4d-handoff.md) | SaaS 化（テナント分離 / 設定 / 招待 / プラン・上限・監査） |
+| 5a | 🔄 コード済 | [phase-5a-production-handoff.md](./phase-5a-production-handoff.md) | 本番公開・招待 URL・KPI 通過月・CA 稼働・DEVELOP 直接作成 |
 | 5 | 未着手 | [phase-5.md](./phase-5.md) | PBX Webhook 統合 |
 
-**→ 次チャット用:** [next-chat-handoff.md](./next-chat-handoff.md)（**Phase 5**）  
-**→ Phase 4 詳細:** [phase-4d-handoff.md](./phase-4d-handoff.md)  
-**→ 現状詳細（Phase 3 以前）:** [current-state-handoff.md](./current-state-handoff.md)
+**→ 次チャット用:** [next-chat-handoff.md](./next-chat-handoff.md)  
+**→ 現状詳細:** [phase-5a-production-handoff.md](./phase-5a-production-handoff.md)  
+**→ Phase 5 PBX:** [phase-5.md](./phase-5.md)
 
 ## プロジェクト基本情報
 
@@ -39,7 +40,8 @@
 | パス | `C:\Users\user\Desktop\ca-crm` |
 | スタック | Next.js 15, TypeScript, Prisma, Supabase Auth, shadcn/ui |
 | dev サーバー | **http://localhost:3003**（`npm run dev`） |
-| DB | Supabase PostgreSQL（`.env` 設定済み） |
+| 本番 | **https://hc-crm.vercel.app** |
+| DB | Supabase PostgreSQL（Tokyo） |
 
 ## 関連ドキュメント
 
@@ -53,9 +55,9 @@
 3. **git commit は明示指示があるまで行わない**
 4. 求職者アクセス: `lib/auth/access.ts`（tenant スコープ対応）
 5. 架電リード: `lib/tenant/access.ts`（tenant 内共有）
-6. テナントコンテキスト: `lib/tenant/context.ts`（DEVELOP 切替対応）
+6. テナントコンテキスト: `lib/tenant/context.ts`（DEVELOP 切替 + `cache()`）
 7. ルート RBAC: `lib/auth/navigation.ts`
-8. Client Component から Prisma を transitively import しない
+8. **Client Component から Prisma を transitively import しない** — 定数は `lib/tenant/plan-options.ts` 等に分離
 
 ## ディレクトリ構成（主要）
 
@@ -65,21 +67,24 @@ app/
   auth/callback/
   (dashboard)/
     dashboard/, candidates/, communications/
-    call-leads/, kpi/, kpi/goals, analytics/, settings/
-    users/                           # → /settings/members へリダイレクト
+    call-leads/, kpi/, kpi/goals, analytics/
+    team-status/                   # CA 稼働状況（MANAGER+）
+    settings/                      # tenant, members, tenants（DEVELOP）
+    users/                         # → /settings/members へリダイレクト
   api/calls/initiate/
   api/cron/activity-metrics-daily/
 components/
   candidates/, call-leads/, kpi/, analytics/, users/
+  team-status/                     # ca-presence-panel
   layout/                          # sidebar, develop-tenant-switcher
 lib/
-  actions/                         # kpi, analytics, users, tenant
-  auth/                            # session, access, rbac, data-scope, navigation
-  tenant/                          # context, plan-config, enforce-limits, audit, eviction
+  actions/                         # kpi, analytics, users, tenant, auth
+  auth/                            # session, presence, rbac, navigation
+  tenant/                          # context, plan-config, plan-options, enforce-limits
   kpi/, analytics/
-  users/lifecycle.ts
-  constants/candidate-display.ts
+  users/lifecycle.ts, invite.ts
+  utils/site-url.ts
 prisma/schema.prisma
-scripts/                           # verify-*, backfill, seed-demo-tenant
+scripts/                           # verify-*, backfill, promote-user-develop
 .github/workflows/sync-kpi-daily.yml
 ```

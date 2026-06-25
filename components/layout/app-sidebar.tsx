@@ -13,6 +13,7 @@ import {
   BarChart3,
   GitBranch,
   Settings,
+  Radio,
   type LucideIcon,
 } from "lucide-react";
 import type { AppRouteDefinition, AppRouteId } from "@/lib/auth/navigation";
@@ -27,6 +28,7 @@ const ROUTE_ICONS: Record<AppRouteId, LucideIcon> = {
   communications: MessageSquare,
   kpi: BarChart3,
   analytics: GitBranch,
+  "team-status": Radio,
   "candidates-new": UserPlus,
   settings: Settings,
 };

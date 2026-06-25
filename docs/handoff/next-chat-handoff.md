@@ -1,51 +1,54 @@
 # 新チャット引き継ぎ指示書
 
-**更新日:** 2026-06-24  
+**更新日:** 2026-06-25  
 **プロジェクト:** CA CRM — `C:\Users\user\Desktop\ca-crm`  
-**現在地:** Phase 4 **完了** → **Phase 5（PBX Webhook 統合）**
+**現在地:** Phase 5a 機能追加済み（**未コミット**）→ **コミット / 本番反映 / Phase 5 へ**
 
-**詳細は [phase-5.md](./phase-5.md) を参照。**
+**詳細は [phase-5a-production-handoff.md](./phase-5a-production-handoff.md) を参照。**
 
 ---
 
 ## 新チャットに貼り付ける指示文
 
-以下をそのまま新しい Cursor チャットの最初のメッセージに貼り付けてください。
-
 ```
-# CA CRM — Phase 5 PBX Webhook 統合
+# CA CRM — Phase 5a 反映 & 次フェーズ
 
-@docs/handoff/phase-5.md と @docs/handoff/next-chat-handoff.md を参照してください。
+@docs/handoff/phase-5a-production-handoff.md と @docs/handoff/next-chat-handoff.md を参照してください。
 
 ## プロジェクト
 - パス: C:\Users\user\Desktop\ca-crm
-- dev: http://localhost:3003（npm run dev）
+- ローカル dev: http://localhost:3003（npm run dev）
+- 本番（Vercel）: https://hc-crm.vercel.app
+- GitHub: ABHC-Furukawa/hc-crm（master）
+- Supabase: xtnlqkopygdchirfyxge（Tokyo）
 - スタック: Next.js 15, TypeScript, Prisma, Supabase Auth, shadcn/ui
 
 ## 重要ルール
 - 既存 CRM（Candidate / Activity / Communications / CallLead）を壊さない
 - npm run build と npm run dev を同時実行しない
 - git commit は明示指示があるまで行わない
-- データスコープは Tenant（`tenantId`）— Phase 4 完了済み
+- Client Component から @prisma/client を transitively import しない
 
-## Phase 4 完了済み（前提）
-- 4a: Candidate/Company/Tag tenantId + verify:tenant-isolation
-- 4b: /settings/tenant, /members, /tenants
-- 4c: メール招待 + /accept-invite
-- 4d: プラン・上限 enforcement・TenantAuditLog
+## 完了済み（ローカル・未コミットの可能性あり）
+- 招待 URL: NEXT_PUBLIC_SITE_URL + site-url.ts ガード + Vercel redeploy
+- パフォーマンス: cache() / Prisma globalThis シングルトン
+- DEVELOP: メンバー直接作成 + users 上限スキップ
+- KPI: 進行中・金額を通過月ベース集計
+- CA 稼働状況: /team-status（10分オンライン、last_seen_at）
+- 修正: /settings/tenants（plan-options.ts 分離）
 
-## 今回のタスク: Phase 5
-- PBX Webhook 受信 API
-- lib/pbx/ プロバイダ別パーサ・署名検証
-- PbxWebhookEvent（冪等）
-- 電話番号 → Candidate 突合（tenant スコープ内）
-- Communication + Call 自動 upsert、Activity 記録
-- UI: 録音 URL・通話時間・ステータス
+## 優先タスク
+1. git commit + push + Vercel redeploy（未反映なら）
+2. 本番 DB: npx prisma migrate deploy（last_seen_at）
+3. Supabase Auth URL Configuration 確認
+4. （任意）Vercel Tokyo + connection_limit=1
+5. （任意）架電リストページネーション
+6. Phase 5 PBX Webhook（phase-5.md）
 
-## 検証（Phase 4 回帰 + Phase 5 追加）
+## 検証
 npm run verify:tenant-isolation
-npm run verify:tenant-limits
-npm run build                  # dev 停止後
+npm run verify:user-invite
+npm run build
 ```
 
 ---
@@ -54,25 +57,26 @@ npm run build                  # dev 停止後
 
 | 項目 | 値 |
 |------|-----|
-| dev URL | http://localhost:3003 |
-| DEVELOP ユーザー | admin@ab-hc.co.jp |
-| Default tenant ID | `a0000000-0000-4000-a000-000000000001` |
-| プラン設定 | `lib/tenant/plan-config.ts`（社内調整可） |
-| 監査ログ | DEVELOP のみ `/settings/tenants/[id]` |
+| 本番 URL | https://hc-crm.vercel.app |
+| ローカル dev | http://localhost:3003 |
+| DEVELOP ユーザー | `admin-1@ab-hc.co.jp` |
+| 招待 redirectTo | `{SITE_URL}/auth/callback?next=/accept-invite` |
+| CA 稼働状況 | `/team-status`（MANAGER+、10分以内=オンライン） |
+| DEVELOP 直接作成 | 設定 → メンバー → 直接作成タブ |
+| KPI 集計（月次） | エントリー/面談設定/入社 = **通過月** |
 
 ---
 
-## Phase 4 検証コマンド（回帰用）
+## 2026-06-25 セッションで追加した主要変更
 
-```powershell
-npm run verify:tenant-isolation
-npm run verify:develop-tenant
-npm run verify:user-invite
-npm run verify:call-lead-convert
-npm run verify:tenant-limits
-npm run verify:tenant-audit
-node scripts/regression-step7.mjs
-```
+| 領域 | 変更 |
+|------|------|
+| Auth / URL | `lib/utils/site-url.ts`, Vercel `NEXT_PUBLIC_SITE_URL` |
+| Performance | `cache()` in session/context, `lib/prisma.ts` singleton |
+| Users | DEVELOP direct create, `member-onboarding-section.tsx` |
+| KPI | Transition-based monthly pipeline + amount metrics |
+| Presence | `last_seen_at`, `/team-status`, `lib/auth/presence*.ts` |
+| Bugfix | `lib/tenant/plan-options.ts`（tenants page crash） |
 
 ---
 
@@ -80,7 +84,7 @@ node scripts/regression-step7.mjs
 
 | ファイル | 内容 |
 |----------|------|
-| **[phase-5.md](./phase-5.md)** | **Phase 5 詳細（メイン）** |
+| **[phase-5a-production-handoff.md](./phase-5a-production-handoff.md)** | **本番公開・5a 完了記録（メイン）** |
+| [phase-5.md](./phase-5.md) | PBX Webhook |
 | [phase-4d-handoff.md](./phase-4d-handoff.md) | Phase 4 完了記録 |
-| [current-state-handoff.md](./current-state-handoff.md) | Phase 3 以前の詳細 |
 | [README.md](./README.md) | ロードマップ索引 |

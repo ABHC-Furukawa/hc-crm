@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { User } from "@prisma/client";
 import { assertActiveUser } from "@/lib/auth/access";
 import { getSessionUser, requireSessionUser } from "@/lib/auth/session";
@@ -15,7 +16,7 @@ export type TenantContext = {
   isDevelopTenantOverride: boolean;
 };
 
-export async function getDefaultTenantId(): Promise<string> {
+export const getDefaultTenantId = cache(async (): Promise<string> => {
   const tenant = await prisma.tenant.findUnique({
     where: { slug: DEFAULT_TENANT_SLUG },
     select: { id: true },
@@ -25,7 +26,7 @@ export async function getDefaultTenantId(): Promise<string> {
 
   // マイグレーション未適用時のフォールバック（開発用）
   return DEFAULT_TENANT_ID;
-}
+});
 
 export async function resolveTenantIdForUser(user: User): Promise<string> {
   return user.tenantId;
@@ -36,7 +37,7 @@ export async function ensureUserTenant(user: User): Promise<User> {
   return user;
 }
 
-export async function getTenantContext(): Promise<TenantContext | null> {
+export const getTenantContext = cache(async (): Promise<TenantContext | null> => {
   const user = await getSessionUser();
   if (!user) return null;
 
@@ -56,9 +57,9 @@ export async function getTenantContext(): Promise<TenantContext | null> {
     homeTenantId,
     isDevelopTenantOverride: tenantId !== homeTenantId,
   };
-}
+});
 
-export async function requireTenantContext(): Promise<TenantContext> {
+export const requireTenantContext = cache(async (): Promise<TenantContext> => {
   const user = await requireSessionUser();
   assertActiveUser(user);
 
@@ -72,4 +73,4 @@ export async function requireTenantContext(): Promise<TenantContext> {
     homeTenantId,
     isDevelopTenantOverride: tenantId !== homeTenantId,
   };
-}
+});

@@ -122,6 +122,10 @@ export const KPI_DAILY_METRIC_LABELS: Record<
 export const KPI_SNAPSHOT_AGGREGATION_HINT =
   CANDIDATE_DISPLAY.snapshotStatusHint;
 
+/** 進行中パイプライン・金額面 — 月次は通過月ベース */
+export const KPI_PIPELINE_PERIOD_AGGREGATION_HINT =
+  "選択月内に各フェーズを通過した件数・金額（紹介料は通過月に計上）";
+
 /** 月次遷移指標の集計説明 */
 export const KPI_TRANSITION_AGGREGATION_HINT =
   "選択月内の Activity / CallAttempt / Application から集計";
@@ -150,14 +154,14 @@ export const KPI_METRIC_LABELS: Record<KpiMetricType, string> = {
   JOINED_AMOUNT: "入社金額",
 };
 
-/** 進行中パイプライン（スナップショット）カード用 */
+/** 進行中パイプライン（月次は通過月ベース）カード用 */
 export const KPI_PIPELINE_METRIC_LABELS: Record<
   (typeof KPI_PIPELINE_COUNT_METRICS)[number],
   string
 > = {
-  ENTRY_COUNT: "エントリー（スナップ）",
-  INTERVIEW_SET_COUNT: "面談設定（スナップ）",
-  JOINED_COUNT: "入社（スナップ）",
+  ENTRY_COUNT: "エントリー",
+  INTERVIEW_SET_COUNT: "面談設定",
+  JOINED_COUNT: "入社",
 };
 
 /** 金額面カード用 */
@@ -165,9 +169,9 @@ export const KPI_AMOUNT_METRIC_LABELS: Record<
   (typeof KPI_AMOUNT_METRICS)[number],
   string
 > = {
-  ENTRY_AMOUNT: "エントリー金額（累計）",
-  INTERVIEW_SET_AMOUNT: "面談設定金額（累計）",
-  JOINED_AMOUNT: "入社金額（累計）",
+  ENTRY_AMOUNT: "エントリー金額",
+  INTERVIEW_SET_AMOUNT: "面談設定金額",
+  JOINED_AMOUNT: "入社金額",
 };
 
 /** 月次遷移カード用（必要な指標のみ上書き） */
@@ -262,16 +266,27 @@ export function getGoalMetricLabel(metricType: KpiMetricType): string {
       metricType
     )
   ) {
-    return `${getMetricLabel(metricType, "pipeline")} · 月末スナップ`;
+    return `${getMetricLabel(metricType, "pipeline")} · 通過月`;
   }
   if (isAmountMetric(metricType)) {
-    return `${getMetricLabel(metricType, "amount")} · 月末スナップ`;
+    return `${getMetricLabel(metricType, "amount")} · 通過月`;
   }
   return KPI_METRIC_LABELS[metricType];
 }
 
 export function isAmountMetric(metricType: KpiMetricType): boolean {
   return (KPI_AMOUNT_METRICS as readonly KpiMetricType[]).includes(metricType);
+}
+
+/** 月次 KPI — 通過月ベース（スナップショットではなく遷移集計） */
+export function usesTransitionPeriodAggregation(
+  metricType: KpiMetricType
+): boolean {
+  return (
+    (KPI_PIPELINE_COUNT_METRICS as readonly KpiMetricType[]).includes(
+      metricType
+    ) || isAmountMetric(metricType)
+  );
 }
 
 export function formatMetricValue(

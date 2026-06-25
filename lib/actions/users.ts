@@ -191,7 +191,7 @@ export async function createUserAction(
 ): Promise<CreateUserActionState> {
   const { user, tenantId } = await requireTenantContext();
 
-  if (!canManageUsers(user.role)) {
+  if (user.role !== UserRole.DEVELOP) {
     return { error: "この操作を行う権限がありません" };
   }
 

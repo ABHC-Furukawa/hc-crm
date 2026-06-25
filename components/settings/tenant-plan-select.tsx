@@ -1,9 +1,12 @@
 "use client";
 
 import { useTransition } from "react";
-import { TenantPlan } from "@prisma/client";
 import { updateTenantPlanAction } from "@/lib/actions/tenant";
-import { TENANT_PLAN_OPTIONS } from "@/lib/tenant/plan-config";
+import {
+  TENANT_PLAN_OPTIONS,
+  isTenantPlanValue,
+  type TenantPlanValue,
+} from "@/lib/tenant/plan-options";
 import {
   Select,
   SelectContent,
@@ -17,15 +20,17 @@ export function TenantPlanSelect({
   plan,
 }: {
   tenantId: string;
-  plan: TenantPlan;
+  plan: string;
 }) {
   const [pending, startTransition] = useTransition();
+  const selectedPlan: TenantPlanValue = isTenantPlanValue(plan) ? plan : "FREE";
 
   return (
     <Select
-      value={plan}
+      value={selectedPlan}
       disabled={pending}
       onValueChange={(value) => {
+        if (!isTenantPlanValue(value)) return;
         startTransition(() => {
           void updateTenantPlanAction(tenantId, value);
         });

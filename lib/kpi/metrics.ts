@@ -9,6 +9,7 @@ import {
   INTERVIEW_SET_PIPELINE_STATUSES,
   isAmountMetric,
   isSnapshotMetric,
+  usesTransitionPeriodAggregation,
 } from "@/lib/kpi/constants";
 import {
   hasFullDailyCache,
@@ -389,7 +390,12 @@ export async function computeMetricValue(
   range: DateRange,
   options?: ComputeOptions
 ): Promise<number> {
-  if (isSnapshotMetric(metricType) && !options?.daily) {
+  const useSnapshot =
+    isSnapshotMetric(metricType) &&
+    !options?.daily &&
+    !usesTransitionPeriodAggregation(metricType);
+
+  if (useSnapshot) {
     const statusMap =
       options?.snapshotStatusMap ??
       (await resolveCandidateStatusesAtDate(
@@ -407,8 +413,12 @@ export async function computePeriodMetrics(
   range: DateRange
 ): Promise<Partial<Record<KpiMetricType, number>>> {
   const result: Partial<Record<KpiMetricType, number>> = {};
-  const hasSnapshot = metricTypes.some(isSnapshotMetric);
-  const snapshotStatusMap = hasSnapshot
+  const needsSnapshot = metricTypes.some(
+    (metricType) =>
+      isSnapshotMetric(metricType) &&
+      !usesTransitionPeriodAggregation(metricType)
+  );
+  const snapshotStatusMap = needsSnapshot
     ? await resolveCandidateStatusesAtDate(scope, snapshotAsOfDate(range.to))
     : undefined;
 

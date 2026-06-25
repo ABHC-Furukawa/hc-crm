@@ -9,6 +9,8 @@ import {
   resetPasswordSchema,
 } from "@/lib/validators/auth";
 import { completePendingInvite } from "@/lib/auth/pending-invite";
+import { touchLastSeenNow } from "@/lib/auth/presence";
+import { prisma } from "@/lib/prisma";
 import { getSiteUrl } from "@/lib/utils/site-url";
 
 export type AuthActionState = {
@@ -35,6 +37,20 @@ export async function loginAction(
 
   if (error) {
     return { error: "メールアドレスまたはパスワードが正しくありません" };
+  }
+
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  if (authUser) {
+    const dbUser = await prisma.user.findUnique({
+      where: { authId: authUser.id },
+      select: { id: true },
+    });
+    if (dbUser) {
+      await touchLastSeenNow(dbUser.id);
+    }
   }
 
   redirect("/dashboard");

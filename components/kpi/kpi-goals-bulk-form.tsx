@@ -9,9 +9,9 @@ import {
   KPI_AMOUNT_METRICS,
   KPI_METRIC_UNITS,
   KPI_PIPELINE_COUNT_METRICS,
+  KPI_PIPELINE_PERIOD_AGGREGATION_HINT,
   KPI_TRANSITION_AGGREGATION_HINT,
   KPI_TRANSITION_COUNT_METRICS,
-  KPI_SNAPSHOT_AGGREGATION_HINT,
   getGoalMetricLabel,
 } from "@/lib/kpi/constants";
 import {
@@ -119,8 +119,8 @@ export function KpiGoalsBulkForm({
       </GoalSection>
 
       <GoalSection
-        heading="進行中パイプライン（スナップ）"
-        hint={KPI_SNAPSHOT_AGGREGATION_HINT}
+        heading="進行中パイプライン"
+        hint={KPI_PIPELINE_PERIOD_AGGREGATION_HINT}
       >
         {KPI_PIPELINE_COUNT_METRICS.map((metricType) => (
           <GoalField
@@ -132,7 +132,7 @@ export function KpiGoalsBulkForm({
         ))}
       </GoalSection>
 
-      <GoalSection heading="金額面（スナップ）" hint={KPI_SNAPSHOT_AGGREGATION_HINT}>
+      <GoalSection heading="金額面" hint={KPI_PIPELINE_PERIOD_AGGREGATION_HINT}>
         {KPI_AMOUNT_METRICS.map((metricType) => (
           <GoalField
             key={metricType}

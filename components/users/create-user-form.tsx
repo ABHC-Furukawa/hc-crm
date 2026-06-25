@@ -60,7 +60,7 @@ export function CreateUserForm({
       <CardHeader>
         <CardTitle>アカウント作成</CardTitle>
         <CardDescription>
-          CRM にログインできるユーザーを追加します
+          DEVELOP 専用 — パスワードを指定して即時作成します（メンバー上限は適用されません）
         </CardDescription>
       </CardHeader>
       <CardContent>

@@ -21,6 +21,11 @@ export function canViewTeamMetrics(role: UserRole): boolean {
   );
 }
 
+/** CA の稼働状況（最終操作）を閲覧可能 */
+export function canViewCaPresence(role: UserRole): boolean {
+  return canViewTeamMetrics(role);
+}
+
 /** KPI / Analytics で担当者切替可能 */
 export function canSelectScopeUser(role: UserRole): boolean {
   return canViewTeamMetrics(role);

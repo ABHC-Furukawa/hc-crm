@@ -23,6 +23,30 @@ export function formatDateTime(date: Date | string): string {
   }).format(new Date(date));
 }
 
+export function formatRelativeTime(
+  date: Date | string,
+  now: Date = new Date()
+): string {
+  const target = new Date(date);
+  const diffMs = now.getTime() - target.getTime();
+
+  if (diffMs < 0) {
+    return formatDateTime(target);
+  }
+
+  const diffMinutes = Math.floor(diffMs / 60_000);
+  if (diffMinutes < 1) return "たった今";
+  if (diffMinutes < 60) return `${diffMinutes}分前`;
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours}時間前`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) return `${diffDays}日前`;
+
+  return formatDateTime(target);
+}
+
 export function fullName(lastName: string, firstName: string): string {
   return `${lastName} ${firstName}`;
 }

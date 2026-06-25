@@ -13,6 +13,7 @@ export type AppRouteId =
   | "communications"
   | "kpi"
   | "analytics"
+  | "team-status"
   | "candidates-new"
   | "settings";
 
@@ -62,6 +63,13 @@ export const APP_ROUTE_DEFINITIONS: AppRouteDefinition[] = [
     href: "/analytics",
     label: "ファネル分析",
     matchPrefix: "/analytics",
+  },
+  {
+    id: "team-status",
+    href: "/team-status",
+    label: "CA 稼働状況",
+    roles: [UserRole.MANAGER, UserRole.ADMIN, UserRole.DEVELOP],
+    matchPrefix: "/team-status",
   },
   {
     id: "candidates-new",

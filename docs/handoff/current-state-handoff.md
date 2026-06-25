@@ -1,8 +1,11 @@
 # CA CRM — 現状引き継ぎ書（2026-06-23）
 
+> **⚠️ 2026-06-25 更新:** Phase 4 / 5a 以降の最新状態は **[phase-5a-production-handoff.md](./phase-5a-production-handoff.md)** と **[next-chat-handoff.md](./next-chat-handoff.md)** を参照。本書は Phase 3.5 時点の履歴として残しています。
+
 **プロジェクト:** CA CRM  
 **パス:** `C:\Users\user\Desktop\ca-crm`  
 **dev:** http://localhost:3003（`npm run dev`）  
+**本番:** https://hc-crm.vercel.app  
 **スタック:** Next.js 15, TypeScript, Prisma, Supabase Auth, shadcn/ui, recharts
 
 ---

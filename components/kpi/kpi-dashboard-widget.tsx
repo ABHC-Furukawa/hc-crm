@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { KPI_SNAPSHOT_AGGREGATION_HINT } from "@/lib/kpi/constants";
+import { KPI_PIPELINE_PERIOD_AGGREGATION_HINT } from "@/lib/kpi/constants";
 import { formatMonthLabel } from "@/lib/kpi/dates";
 
 export async function KpiDashboardWidget() {
@@ -22,8 +22,7 @@ export async function KpiDashboardWidget() {
         <div>
           <CardTitle className="text-base">今月の KPI</CardTitle>
           <CardDescription>
-            {formatMonthLabel(yearMonth)} · 個人 · {KPI_SNAPSHOT_AGGREGATION_HINT}
-            （本日時点）
+            {formatMonthLabel(yearMonth)} · 個人 · {KPI_PIPELINE_PERIOD_AGGREGATION_HINT}
           </CardDescription>
         </div>
         <BarChart3 className="h-4 w-4 text-muted-foreground" />

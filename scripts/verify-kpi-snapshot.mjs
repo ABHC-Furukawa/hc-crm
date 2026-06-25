@@ -38,7 +38,7 @@ async function main() {
       lastName: true,
       firstName: true,
       status: true,
-      jobCase: { select: { referralFee: true } },
+      jobCases: { where: { includeInKpi: true }, select: { referralFee: true } },
     },
   });
 
@@ -53,6 +53,7 @@ async function main() {
   const entryFees = await prisma.candidateJobCase.findMany({
     where: {
       referralFee: { not: null },
+      includeInKpi: true,
       candidate: { ...baseWhere, status: { in: ENTRY_OR_BEYOND } },
     },
     select: { referralFee: true },
@@ -61,6 +62,7 @@ async function main() {
   const joinedFees = await prisma.candidateJobCase.findMany({
     where: {
       referralFee: { not: null },
+      includeInKpi: true,
       candidate: { ...baseWhere, status: "JOINED" },
     },
     select: { referralFee: true },

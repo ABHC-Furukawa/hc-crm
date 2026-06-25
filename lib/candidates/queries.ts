@@ -10,7 +10,9 @@ export const candidateDetailInclude = {
     include: { user: { select: { id: true, name: true, email: true } } },
   },
   tags: { include: { tag: true } },
-  jobCase: true,
+  jobCases: {
+    orderBy: [{ closedAt: "asc" as const }, { createdAt: "asc" as const }],
+  },
   notes: {
     where: { deletedAt: null },
     orderBy: [{ isPinned: "desc" as const }, { createdAt: "desc" as const }],

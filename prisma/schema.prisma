@@ -528,7 +528,7 @@ model Candidate {
   applications     Application[]
   notes            Note[]
   tags             CandidateTag[]
-  jobCase          CandidateJobCase?
+  jobCases         CandidateJobCase[]
   convertedFromCallLeads CallLead[] @relation("CallLeadConversion")
 
   @@index([tenantId])
@@ -564,25 +564,30 @@ model CandidateAssignment {
 }
 
 // ─────────────────────────────────────────────
-// CandidateJobCase — 候補者の進行中案件（1:1）
+// CandidateJobCase — 候補者の案件（1:N）
 // ─────────────────────────────────────────────
 
 model CandidateJobCase {
-  id                  String    @id @default(uuid()) @db.Uuid
-  candidateId         String    @unique @map("candidate_id") @db.Uuid
-  entryJobName        String?   @map("entry_job_name")
-  dispatchCompanyName String?   @map("dispatch_company_name")
-  referralFee         Int?      @map("referral_fee") // 万円
-  interviewPrepAt     DateTime? @map("interview_prep_at")
-  interviewAt         DateTime? @map("interview_at")
-  factoryTourAt       DateTime? @map("factory_tour_at") @db.Date
-  offerAcceptedAt     DateTime? @map("offer_accepted_at") @db.Date
-  scheduledJoinAt     DateTime? @map("scheduled_join_at") @db.Date
-  createdAt           DateTime  @default(now()) @map("created_at")
-  updatedAt           DateTime  @updatedAt @map("updated_at")
+  id                   String    @id @default(uuid()) @db.Uuid
+  candidateId          String    @map("candidate_id") @db.Uuid
+  entryJobName         String?   @map("entry_job_name")
+  dispatchCompanyKey   String?   @map("dispatch_company_key")
+  dispatchCompanyOther  String?   @map("dispatch_company_other")
+  referralFee          Int?      @map("referral_fee") // 万円
+  interviewPrepAt      DateTime?  @map("interview_prep_at") @db.Date
+  interviewAt          DateTime?  @map("interview_at") @db.Date
+  factoryTourAt        DateTime?  @map("factory_tour_at") @db.Date
+  offerAcceptedAt      DateTime?  @map("offer_accepted_at") @db.Date
+  scheduledJoinAt      DateTime?  @map("scheduled_join_at") @db.Date
+  includeInKpi        Boolean   @default(true) @map("include_in_kpi")
+  closedAt            DateTime? @map("closed_at")
+  closedReason        String?   @map("closed_reason")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
 
   candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 
+  @@index([candidateId])
   @@map("candidate_job_cases")
 }
 

@@ -275,6 +275,7 @@ async function sumReferralFeeForCandidateIds(
     where: {
       candidateId: { in: candidateIds },
       referralFee: { not: null },
+      includeInKpi: true,
       candidate: scopedCandidateWhere(scope),
     },
     select: { referralFee: true },

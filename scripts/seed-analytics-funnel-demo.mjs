@@ -283,17 +283,24 @@ async function seedAdvisorFunnel(advisor, targets, advisorIndex, companyId) {
       }
 
       if (step.key === "joined") {
-        await prisma.candidateJobCase.upsert({
+        const existingJobCase = await prisma.candidateJobCase.findFirst({
           where: { candidateId: candidate.id },
-          create: {
-            candidateId: candidate.id,
-            entryJobName: "デモ工場勤務",
-            referralFee: 50 + i * 10,
-          },
-          update: {
-            referralFee: 50 + i * 10,
-          },
         });
+        const referralFee = 50 + i * 10;
+        if (existingJobCase) {
+          await prisma.candidateJobCase.update({
+            where: { id: existingJobCase.id },
+            data: { referralFee },
+          });
+        } else {
+          await prisma.candidateJobCase.create({
+            data: {
+              candidateId: candidate.id,
+              entryJobName: "デモ工場勤務",
+              referralFee,
+            },
+          });
+        }
       }
     }
   }

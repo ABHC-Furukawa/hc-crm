@@ -45,6 +45,7 @@ async function main() {
       where: {
         candidateId: { in: candidateIds },
         referralFee: { not: null },
+        includeInKpi: true,
       },
       select: { referralFee: true },
     });

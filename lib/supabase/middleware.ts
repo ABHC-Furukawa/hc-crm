@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { hasPendingInviteFromAuth } from "@/lib/auth/pending-invite";
+import { hasPendingInviteFromAuth } from "@/lib/auth/pending-invite-auth";
 
 const PUBLIC_PATH_PREFIXES = [
   "/login",

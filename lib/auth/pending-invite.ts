@@ -1,11 +1,6 @@
-import type { User as SupabaseAuthUser } from "@supabase/supabase-js";
 import { prisma } from "@/lib/prisma";
 
-export function hasPendingInviteFromAuth(
-  authUser: SupabaseAuthUser
-): boolean {
-  return authUser.user_metadata?.pendingInvite === true;
-}
+export { hasPendingInviteFromAuth } from "@/lib/auth/pending-invite-auth";
 
 export async function getPendingInviteByAuthId(
   authId: string

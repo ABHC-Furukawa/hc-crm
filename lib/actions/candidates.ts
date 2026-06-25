@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { ActivityAction, AssignmentRole } from "@prisma/client";
 import {
@@ -13,6 +14,11 @@ import {
   candidateDetailInclude,
   candidateListInclude,
 } from "@/lib/candidates/queries";
+import {
+  findDuplicateCandidates,
+  formatDuplicateRegistrationNotice,
+} from "@/lib/candidates/duplicate-detector";
+import { CANDIDATE_DUPLICATE_NOTICE_COOKIE } from "@/lib/candidates/registration-notice";
 import { requireSessionUser } from "@/lib/auth/session";
 import { requireTenantContext } from "@/lib/tenant/context";
 import { CANDIDATE_DISPLAY } from "@/lib/constants/candidate-display";
@@ -75,6 +81,14 @@ export async function createCandidateAction(
   const data = parsed.data;
   const dbInput = toCandidateDbInput(data);
 
+  const duplicateMatches = await findDuplicateCandidates(tenantId, {
+    email: data.email,
+    phone: data.phone,
+    lastName: data.lastName,
+    firstName: data.firstName,
+    age: data.age,
+  });
+
   let candidate;
   try {
     candidate = await prisma.$transaction(async (tx) => {
@@ -121,8 +135,19 @@ export async function createCandidateAction(
     }
     return errorState(
       formData,
-      CANDIDATE_DISPLAY.registerFailed
+      "求職者の登録に失敗しました"
     );
+  }
+
+  const duplicateNotice = formatDuplicateRegistrationNotice(duplicateMatches);
+  if (duplicateNotice) {
+    const cookieStore = await cookies();
+    cookieStore.set(CANDIDATE_DUPLICATE_NOTICE_COOKIE, duplicateNotice, {
+      maxAge: 120,
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+    });
   }
 
   revalidatePath("/candidates");
@@ -248,7 +273,8 @@ export async function getDashboardStats() {
   const { tenantId } = await requireTenantContext();
   const baseWhere = candidateAccessFilter(user, tenantId);
 
-  const [total, byStatus, recentCandidates, openTasks] = await Promise.all([
+  const [total, byStatus, recentCandidates, openTasks, openTaskItems] =
+    await Promise.all([
     prisma.candidate.count({ where: baseWhere }),
     prisma.candidate.groupBy({
       by: ["status"],
@@ -275,7 +301,29 @@ export async function getDashboardStats() {
         candidate: baseWhere,
       },
     }),
+    prisma.task.findMany({
+      where: {
+        status: { in: ["TODO", "IN_PROGRESS"] },
+        assignedToId: user.id,
+        candidate: baseWhere,
+      },
+      orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
+      take: 8,
+      select: {
+        id: true,
+        title: true,
+        dueAt: true,
+        status: true,
+        candidate: {
+          select: {
+            id: true,
+            lastName: true,
+            firstName: true,
+          },
+        },
+      },
+    }),
   ]);
 
-  return { total, byStatus, recentCandidates, openTasks };
+  return { total, byStatus, recentCandidates, openTasks, openTaskItems };
 }

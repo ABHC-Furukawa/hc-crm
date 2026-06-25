@@ -15,8 +15,7 @@ export const CANDIDATE_DISPLAY = {
   countLabel: (count: number) => `${count} 件の求職者`,
   profileDescription: "求職者の詳細情報",
   notFound: "求職者が見つかりません",
-  registerFailed:
-    "求職者の登録に失敗しました。電話番号が重複している可能性があります。",
+  registerFailed: "求職者の登録に失敗しました",
   updateFailed: "求職者の更新に失敗しました",
   selectRequired: "求職者を選択してください",
   logModalHint:

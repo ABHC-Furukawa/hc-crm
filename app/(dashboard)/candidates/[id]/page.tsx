@@ -16,6 +16,7 @@ import { TaskListPanel } from "@/components/candidates/detail/task-list-panel";
 import { NoteListPanel } from "@/components/candidates/detail/note-list-panel";
 import { CommunicationHistoryPanel } from "@/components/candidates/detail/communication-history-panel";
 import { JobCasePanel } from "@/components/candidates/detail/job-case-panel";
+import { CandidateDuplicateNoticeBanner } from "@/components/candidates/detail/candidate-duplicate-notice-banner";
 import { Button } from "@/components/ui/button";
 import { isDetailTab, type DetailTabId } from "@/lib/constants/labels";
 import { fullName } from "@/lib/utils";
@@ -82,6 +83,8 @@ export default async function CandidateDetailPage({
             一覧に戻る
           </Link>
         </Button>
+
+        <CandidateDuplicateNoticeBanner />
 
         <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
           <CandidateSummaryCard candidate={candidate} />

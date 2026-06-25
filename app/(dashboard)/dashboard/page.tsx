@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { CANDIDATE_STATUS_LABELS } from "@/lib/validators/candidate";
 import { CANDIDATE_DISPLAY } from "@/lib/constants/candidate-display";
-import { fullName, formatDateTime } from "@/lib/utils";
+import { fullName, formatDateTime, formatDate } from "@/lib/utils";
 import type { CandidateStatus } from "@prisma/client";
 
 export default async function DashboardPage() {
@@ -37,13 +37,37 @@ export default async function DashboardPage() {
               </CardContent>
             </Card>
           </Link>
-          <Card>
+          <Card className="h-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">未完了タスク</CardTitle>
               <ListTodo className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
               <p className="text-3xl font-bold">{stats.openTasks}</p>
+              {stats.openTaskItems.length === 0 ? (
+                <p className="text-xs text-muted-foreground">未完了タスクはありません</p>
+              ) : (
+                <ul className="divide-y border-t pt-2">
+                  {stats.openTaskItems.map((task) => (
+                    <li key={task.id}>
+                      <Link
+                        href={`/candidates/${task.candidate.id}?tab=tasks`}
+                        className="-mx-1 block rounded-md px-1 py-2 transition-colors hover:bg-muted/60"
+                      >
+                        <p className="truncate text-sm font-medium text-primary">
+                          {task.title}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {fullName(task.candidate.lastName, task.candidate.firstName)}
+                          {task.dueAt
+                            ? ` · 期限 ${formatDate(task.dueAt)}`
+                            : " · 期限未設定"}
+                        </p>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
           <Card className="sm:col-span-2 lg:col-span-1">

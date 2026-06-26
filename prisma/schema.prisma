@@ -593,6 +593,7 @@ model CandidateAssignment {
 model CandidateJobCase {
   id                   String    @id @default(uuid()) @db.Uuid
   candidateId          String    @map("candidate_id") @db.Uuid
+  jobId                String?   @map("job_id") @db.Uuid
   entryJobName         String?   @map("entry_job_name")
   dispatchCompanyKey   String?   @map("dispatch_company_key")
   dispatchCompanyOther  String?   @map("dispatch_company_other")
@@ -609,8 +610,10 @@ model CandidateJobCase {
   updatedAt            DateTime  @updatedAt @map("updated_at")
 
   candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  job       Job?      @relation(fields: [jobId], references: [id], onDelete: SetNull)
 
   @@index([candidateId])
+  @@index([jobId])
   @@map("candidate_job_cases")
 }
 
@@ -1262,6 +1265,7 @@ model Job {
 
   tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   rawJob RawJob? @relation(fields: [rawJobId], references: [id], onDelete: SetNull)
+  candidateJobCases CandidateJobCase[]
 
   @@unique([tenantId, sourceCompany, sourceSheet, jobTitle, location])
   @@index([tenantId, companyName])

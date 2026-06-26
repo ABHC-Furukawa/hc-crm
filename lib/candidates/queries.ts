@@ -12,6 +12,18 @@ export const candidateDetailInclude = {
   tags: { include: { tag: true } },
   jobCases: {
     orderBy: [{ closedAt: "asc" as const }, { createdAt: "asc" as const }],
+    include: {
+      job: {
+        select: {
+          id: true,
+          jobTitle: true,
+          companyName: true,
+          location: true,
+          referralFee: true,
+          sourceCompany: true,
+        },
+      },
+    },
   },
   notes: {
     where: { deletedAt: null },

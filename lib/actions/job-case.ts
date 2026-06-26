@@ -4,8 +4,14 @@ import { revalidatePath } from "next/cache";
 import { ActivityAction } from "@prisma/client";
 import { assertCandidateAccess } from "@/lib/auth/access";
 import { CANDIDATE_DISPLAY } from "@/lib/constants/candidate-display";
+import { buildJobCaseDefaultsFromJob } from "@/lib/jobs/job-case-bridge";
 import { prisma } from "@/lib/prisma";
-import { parseJobCaseFormData, toJobCaseDbInput } from "@/lib/validators/job-case";
+import { requireTenantContext } from "@/lib/tenant/context";
+import {
+  parseJobCaseFormData,
+  toJobCaseDbInput,
+  type JobCaseFormValues,
+} from "@/lib/validators/job-case";
 
 export type JobCaseActionState = {
   error?: string;
@@ -38,14 +44,48 @@ function revalidateCandidatePaths(candidateId: string) {
   revalidatePath("/analytics");
 }
 
+async function mergeJobLinkFields(
+  tenantId: string,
+  form: JobCaseFormValues,
+  data: ReturnType<typeof toJobCaseDbInput>
+) {
+  if (!data.jobId) {
+    return { ...data, jobId: null };
+  }
+
+  const job = await prisma.job.findFirst({
+    where: { id: data.jobId, tenantId },
+  });
+  if (!job) {
+    throw new Error("JOB_NOT_FOUND");
+  }
+
+  const defaults = buildJobCaseDefaultsFromJob(job);
+  const dispatchKey = data.dispatchCompanyKey || defaults.dispatchCompanyKey;
+
+  return {
+    ...data,
+    jobId: job.id,
+    entryJobName: data.entryJobName || defaults.entryJobName,
+    referralFee: data.referralFee ?? defaults.referralFee,
+    dispatchCompanyKey: dispatchKey,
+    dispatchCompanyOther:
+      dispatchKey === "OTHER"
+        ? data.dispatchCompanyOther || defaults.dispatchCompanyOther
+        : null,
+  };
+}
+
 export async function upsertJobCaseAction(
   candidateId: string,
   _prev: JobCaseActionState,
   formData: FormData
 ): Promise<JobCaseActionState> {
   let user;
+  let tenantId: string;
   try {
     ({ user } = await assertCandidateAccess(candidateId));
+    ({ tenantId } = await requireTenantContext());
   } catch {
     return { error: CANDIDATE_DISPLAY.notFound };
   }
@@ -55,7 +95,20 @@ export async function upsertJobCaseAction(
     return { error: "入力内容を確認してください" };
   }
 
-  const data = toJobCaseDbInput(parsed.data);
+  let data;
+  try {
+    data = await mergeJobLinkFields(
+      tenantId,
+      parsed.data,
+      toJobCaseDbInput(parsed.data)
+    );
+  } catch (error) {
+    if (error instanceof Error && error.message === "JOB_NOT_FOUND") {
+      return { error: "選択した ATS 案件が見つかりません" };
+    }
+    return { error: "案件情報の保存に失敗しました" };
+  }
+
   const jobCaseId = parsed.data.jobCaseId;
 
   try {

@@ -9,6 +9,10 @@ import {
   syncJobCaseKpiInclusionAction,
   upsertJobCaseAction,
 } from "@/lib/actions/job-case";
+import {
+  JobCaseJobPicker,
+  type JobCaseLinkSelection,
+} from "@/components/candidates/detail/job-case-job-picker";
 import { CandidateStatusSelector } from "@/components/candidates/candidate-status-selector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +32,17 @@ import { toDateInputValue } from "@/lib/validators/job-case";
 import { cn, formatDate } from "@/lib/utils";
 import { Plus } from "lucide-react";
 
+type JobCaseWithJob = CandidateJobCase & {
+  job: {
+    id: string;
+    jobTitle: string;
+    companyName: string;
+    location: string | null;
+    referralFee: string | null;
+    sourceCompany: string;
+  } | null;
+};
+
 const selectClass =
   "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
@@ -43,7 +58,7 @@ export function JobCasePanel({ candidate }: { candidate: CandidateDetail }) {
             <div>
               <CardTitle>案件情報</CardTitle>
               <CardDescription>
-                エントリーから入社までの進捗を管理します（複数案件の同時エントリーに対応）
+                エントリーから入社までの進捗を管理します。ATS 案件マスタから選択して紐づけることもできます。
               </CardDescription>
             </div>
             <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2">
@@ -110,7 +125,7 @@ function JobCaseKpiInclusionForm({
   jobCases,
 }: {
   candidateId: string;
-  jobCases: CandidateJobCase[];
+  jobCases: JobCaseWithJob[];
 }) {
   const router = useRouter();
   const [state, formAction, pending] = useActionState(
@@ -140,6 +155,7 @@ function JobCaseKpiInclusionForm({
             {jobCases.map((jobCase) => {
               const label =
                 jobCase.entryJobName?.trim() ||
+                jobCase.job?.jobTitle?.trim() ||
                 formatDispatchCompanyLabel(
                   jobCase.dispatchCompanyKey,
                   jobCase.dispatchCompanyOther
@@ -203,13 +219,14 @@ function JobCaseCard({
   onCancel,
 }: {
   candidateId: string;
-  jobCase: CandidateJobCase | null;
+  jobCase: JobCaseWithJob | null;
   index: number;
   onCancel?: () => void;
 }) {
   const isClosed = Boolean(jobCase?.closedAt);
   const title =
     jobCase?.entryJobName?.trim() ||
+    jobCase?.job?.jobTitle?.trim() ||
     (jobCase ? `案件 ${index + 1}` : "新規案件");
 
   return (
@@ -330,7 +347,7 @@ function JobCaseForm({
   onCancel,
 }: {
   candidateId: string;
-  jobCase: CandidateJobCase | null;
+  jobCase: JobCaseWithJob | null;
   disabled?: boolean;
   onCancel?: () => void;
 }) {
@@ -340,6 +357,23 @@ function JobCaseForm({
     {}
   );
   const wasPending = useRef(false);
+
+  const [entryJobName, setEntryJobName] = useState(jobCase?.entryJobName ?? "");
+  const [dispatchKey, setDispatchKey] = useState(jobCase?.dispatchCompanyKey ?? "");
+  const [dispatchOther, setDispatchOther] = useState(
+    jobCase?.dispatchCompanyOther ?? ""
+  );
+  const [referralFee, setReferralFee] = useState(
+    jobCase?.referralFee?.toString() ?? ""
+  );
+
+  const handleJobLink = (selection: JobCaseLinkSelection | null) => {
+    if (!selection) return;
+    setEntryJobName(selection.entryJobName);
+    setDispatchKey(selection.dispatchCompanyKey);
+    setDispatchOther(selection.dispatchCompanyOther);
+    setReferralFee(selection.referralFee);
+  };
 
   useEffect(() => {
     if (wasPending.current && !pending && state.success) {
@@ -354,20 +388,33 @@ function JobCaseForm({
       {jobCase && <input type="hidden" name="jobCaseId" value={jobCase.id} />}
 
       <div className="grid gap-4 sm:grid-cols-2">
+        <JobCaseJobPicker
+          disabled={disabled}
+          initialJob={jobCase?.job ?? null}
+          onSelect={handleJobLink}
+        />
         <Field
           label="エントリー案件名"
           name="entryJobName"
-          defaultValue={jobCase?.entryJobName ?? ""}
+          value={entryJobName}
+          onChange={(event) => setEntryJobName(event.target.value)}
           className="sm:col-span-2"
           disabled={disabled}
         />
-        <DispatchCompanyField jobCase={jobCase} disabled={disabled} />
+        <DispatchCompanyField
+          dispatchKey={dispatchKey}
+          dispatchOther={dispatchOther}
+          onDispatchKeyChange={setDispatchKey}
+          onDispatchOtherChange={setDispatchOther}
+          disabled={disabled}
+        />
         <Field
           label="紹介料（万円）"
           name="referralFee"
           type="number"
           min={0}
-          defaultValue={jobCase?.referralFee?.toString() ?? ""}
+          value={referralFee}
+          onChange={(event) => setReferralFee(event.target.value)}
           disabled={disabled}
         />
         <Field
@@ -430,14 +477,18 @@ function JobCaseForm({
 }
 
 function DispatchCompanyField({
-  jobCase,
+  dispatchKey,
+  dispatchOther,
+  onDispatchKeyChange,
+  onDispatchOtherChange,
   disabled,
 }: {
-  jobCase: CandidateJobCase | null;
+  dispatchKey: string;
+  dispatchOther: string;
+  onDispatchKeyChange: (value: string) => void;
+  onDispatchOtherChange: (value: string) => void;
   disabled?: boolean;
 }) {
-  const initialKey = jobCase?.dispatchCompanyKey ?? "";
-  const [dispatchKey, setDispatchKey] = useState(initialKey);
   const showOther = dispatchKey === "OTHER";
 
   return (
@@ -448,7 +499,7 @@ function DispatchCompanyField({
           id="dispatchCompanyKey"
           name="dispatchCompanyKey"
           value={dispatchKey}
-          onChange={(event) => setDispatchKey(event.target.value)}
+          onChange={(event) => onDispatchKeyChange(event.target.value)}
           disabled={disabled}
           className={selectClass}
         >
@@ -464,7 +515,8 @@ function DispatchCompanyField({
         <Field
           label="派遣会社名（その他）"
           name="dispatchCompanyOther"
-          defaultValue={jobCase?.dispatchCompanyOther ?? ""}
+          value={dispatchOther}
+          onChange={(event) => onDispatchOtherChange(event.target.value)}
           placeholder="会社名を入力"
           disabled={disabled}
         />
@@ -473,7 +525,7 @@ function DispatchCompanyField({
   );
 }
 
-function JobCaseSummary({ jobCase }: { jobCase: CandidateJobCase }) {
+function JobCaseSummary({ jobCase }: { jobCase: JobCaseWithJob }) {
   const items = [
     {
       label: "面談対策",
@@ -517,7 +569,9 @@ function JobCaseSummary({ jobCase }: { jobCase: CandidateJobCase }) {
 function Field({
   label,
   name,
+  value,
   defaultValue,
+  onChange,
   type = "text",
   className,
   disabled,
@@ -525,11 +579,13 @@ function Field({
 }: {
   label: string;
   name: string;
+  value?: string;
   defaultValue?: string;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
   type?: string;
   className?: string;
   disabled?: boolean;
-} & React.InputHTMLAttributes<HTMLInputElement>) {
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "defaultValue" | "onChange">) {
   return (
     <div className={cn("space-y-2", className)}>
       <Label htmlFor={name}>{label}</Label>
@@ -537,7 +593,9 @@ function Field({
         id={name}
         name={name}
         type={type}
+        value={value}
         defaultValue={defaultValue}
+        onChange={onChange}
         disabled={disabled}
         {...props}
       />

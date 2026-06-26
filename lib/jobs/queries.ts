@@ -61,6 +61,39 @@ export async function queryJobById(tenantId: string, jobId: string) {
   });
 }
 
+export async function queryJobsForPicker(
+  tenantId: string,
+  query: string,
+  limit = 20
+) {
+  const term = query.trim();
+
+  return prisma.job.findMany({
+    where: {
+      tenantId,
+      ...(term
+        ? {
+            OR: [
+              { jobTitle: { contains: term, mode: "insensitive" } },
+              { companyName: { contains: term, mode: "insensitive" } },
+              { location: { contains: term, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
+    orderBy: { updatedAt: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      jobTitle: true,
+      companyName: true,
+      location: true,
+      referralFee: true,
+      sourceCompany: true,
+    },
+  });
+}
+
 export async function queryRecentJobImportLogs(tenantId: string, limit = 20) {
   return prisma.jobImportLog.findMany({
     where: { tenantId },

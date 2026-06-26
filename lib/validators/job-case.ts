@@ -13,9 +13,15 @@ const optionalInt = z.preprocess(
 
 const optionalDateString = z.preprocess(emptyToUndefined, z.string().optional());
 
+const optionalUuid = z.preprocess(
+  emptyToUndefined,
+  z.string().uuid().optional()
+);
+
 export const jobCaseSchema = z
   .object({
     jobCaseId: z.string().uuid().optional(),
+    jobId: optionalUuid,
     entryJobName: z.string().optional(),
     dispatchCompanyKey: z.string().optional(),
     dispatchCompanyOther: z.string().optional(),
@@ -52,6 +58,7 @@ export function parseJobCaseFormData(formData: FormData) {
       typeof jobCaseIdRaw === "string" && jobCaseIdRaw.length > 0
         ? jobCaseIdRaw
         : undefined,
+    jobId: formData.get("jobId") || undefined,
     entryJobName: formData.get("entryJobName") || undefined,
     dispatchCompanyKey: formData.get("dispatchCompanyKey") || undefined,
     dispatchCompanyOther: formData.get("dispatchCompanyOther") || undefined,
@@ -71,6 +78,7 @@ function parseDate(value?: string) {
 
 export function toJobCaseDbInput(data: JobCaseFormValues) {
   return {
+    jobId: data.jobId ?? null,
     entryJobName: data.entryJobName || null,
     dispatchCompanyKey: data.dispatchCompanyKey || null,
     dispatchCompanyOther:

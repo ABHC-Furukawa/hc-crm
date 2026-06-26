@@ -5,6 +5,8 @@ import {
   resolveSheetLayout,
 } from "@/lib/jobs/sheets/detect-header-row";
 import { fetchSheetWithFormat } from "@/lib/jobs/sheets/google-sheets-client";
+import { mergeRowRawData } from "@/lib/jobs/sheets/apply-tab-column-mapping";
+import { getTabColumnMapping } from "@/lib/jobs/sheets/tab-column-mapping";
 import type {
   JobAdapterResult,
   JobParseError,
@@ -16,7 +18,8 @@ function gridToRows(
   grid: string[][],
   headerRow: number,
   dataStartRow: number,
-  closedRowIndices: Set<number>
+  closedRowIndices: Set<number>,
+  companyKey: string
 ): { rows: RawJobRow[]; errors: JobParseError[]; skippedClosedCount: number } {
   const errors: JobParseError[] = [];
   const headerIndex = headerRow - 1;
@@ -37,6 +40,7 @@ function gridToRows(
     return trimmed.length > 0 ? trimmed : `__col_${i + 1}`;
   });
 
+  const tabMapping = getTabColumnMapping(companyKey);
   const rows: RawJobRow[] = [];
 
   for (let i = dataStartRow - 1; i < grid.length; i++) {
@@ -50,10 +54,12 @@ function gridToRows(
       continue;
     }
 
-    const rawData: Record<string, string> = {};
+    const headerRawData: Record<string, string> = {};
     for (let col = 0; col < headers.length; col++) {
-      rawData[headers[col]!] = normalizeHeaderCell(line[col]);
+      headerRawData[headers[col]!] = normalizeHeaderCell(line[col]);
     }
+
+    const rawData = mergeRowRawData(headerRawData, line, tabMapping);
 
     rows.push({
       rowNumber: i + 1,
@@ -84,7 +90,8 @@ export class GoogleSheetAdapter implements JobSourceAdapter {
       sheet.values,
       layout.headerRow,
       layout.dataStartRow,
-      sheet.closedRowIndices
+      sheet.closedRowIndices,
+      this.config.companyKey
     );
 
     return { rows, errors, skippedClosedCount };

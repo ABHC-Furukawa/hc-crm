@@ -19,6 +19,8 @@ export type NormalizedJobInput = {
   gender: JobGender;
   maxAge: number | null;
   referralFee: string | null;
+  otherNotes: string | null;
+  sourceUrl: string | null;
   sourceCompany: string;
   sourceSheet: string;
 };

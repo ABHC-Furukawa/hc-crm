@@ -10,6 +10,10 @@ import {
 } from "@/lib/jobs/sheet-columns";
 import { buildShiftTypeDetail } from "@/lib/jobs/normalize/shift-type-detail";
 import {
+  pickOtherNotes,
+  pickSourceUrl,
+} from "@/lib/jobs/sheets/apply-tab-column-mapping";
+import {
   formatReferralFeeDisplay,
   formatSalary,
   normalizeCellText,
@@ -143,6 +147,8 @@ export class GenericCompanyImporter implements CompanyImporter {
       maxAge: parseMaxAge(pickFirstValue(rawData, [...COLUMN_ALIASES.maxAge])),
       referralFee:
         normalizeCellText(referralRaw) ?? formatReferralFeeDisplay(referralYen),
+      otherNotes: pickOtherNotes(rawData),
+      sourceUrl: pickSourceUrl(rawData),
       sourceCompany: ctx.companyKey,
       sourceSheet: ctx.sheetName,
     };

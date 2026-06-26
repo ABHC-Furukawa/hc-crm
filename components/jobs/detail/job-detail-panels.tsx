@@ -83,6 +83,31 @@ export function JobDetailPanels({ job }: { job: JobDetail }) {
             value={formatMaxAge(job.maxAge)}
           />
           <DetailRow label={JOB_FIELD_LABELS.referralFee} value={job.referralFee ?? "—"} />
+          {job.otherNotes?.trim() && (
+            <DetailRow
+              label={JOB_FIELD_LABELS.otherNotes}
+              value={
+                <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                  {job.otherNotes}
+                </p>
+              }
+            />
+          )}
+          {job.sourceUrl?.trim() && (
+            <DetailRow
+              label={JOB_FIELD_LABELS.sourceUrl}
+              value={
+                <a
+                  href={job.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="break-all text-primary underline-offset-4 hover:underline"
+                >
+                  {job.sourceUrl}
+                </a>
+              }
+            />
+          )}
         </CardContent>
       </Card>
 

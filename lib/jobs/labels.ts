@@ -15,6 +15,8 @@ export const JOB_FIELD_LABELS = {
   gender: "性別",
   maxAge: "上限年齢",
   referralFee: "紹介料",
+  otherNotes: "その他",
+  sourceUrl: "URL",
 } as const;
 
 export const JOB_GENDER_LABELS: Record<JobGender, string> = {

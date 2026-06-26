@@ -1256,6 +1256,8 @@ model Job {
   maxAge            Int?                 @map("max_age")
   recruitmentCount  Int?                 @map("recruitment_count")
   referralFee       String?              @map("referral_fee")
+  otherNotes        String?              @map("other_notes") @db.Text
+  sourceUrl         String?              @map("source_url")
   description       String?              @db.Text
   sourceCompany     String               @map("source_company")
   sourceSheet       String               @map("source_sheet")

@@ -154,6 +154,16 @@ export function parseJobGender(value: string | null): JobGender {
   const v = value.trim();
   if (!v) return JobGender.UNKNOWN;
 
+  if (/^[×x✕X]$/.test(v)) {
+    return JobGender.MALE;
+  }
+  if (/^[△▲]$/.test(v)) {
+    return JobGender.ANY;
+  }
+  if (/^[○◯〇]$/.test(v)) {
+    return JobGender.ANY;
+  }
+
   if (/不問|問わず|問わない|性別不問|無問|どちらでも|男女OK|男女可/.test(v)) {
     return JobGender.ANY;
   }

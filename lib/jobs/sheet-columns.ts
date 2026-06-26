@@ -12,6 +12,8 @@ export const STANDARD_FIELD_LABELS = {
   gender: "性別",
   maxAge: "上限年齢",
   referralFee: "紹介料",
+  otherNotes: "その他",
+  sourceUrl: "URL",
 } as const;
 
 /** タブごとに異なる列名を吸収するエイリアス */
@@ -26,6 +28,7 @@ export const COLUMN_ALIASES = {
   ],
   clientCompany: [
     "派遣先企業名",
+    "派遣先名",
     "派遣先",
     "配属先企業名",
     "就業先自動",
@@ -46,8 +49,10 @@ export const COLUMN_ALIASES = {
   ],
   location: [
     "勤務地",
+    "就業地",
     "就業先住所",
     "住所",
+    "所在地",
     "就業場所",
     "勤務地・就業場所",
     "エリア",
@@ -58,6 +63,7 @@ export const COLUMN_ALIASES = {
   ],
   salary: [
     "給与",
+    "給料",
     "月収",
     "月給",
     "salary",
@@ -80,8 +86,6 @@ export const COLUMN_ALIASES = {
     "男女",
     "女性受入",
     "女性枠",
-    "男性",
-    "女性",
     "性別条件",
   ],
   maxAge: [
@@ -102,6 +106,8 @@ export const COLUMN_ALIASES = {
     "紹介料(万円)",
     "紹介料　万円",
   ],
+  otherNotes: ["その他", "備考", "メモ", "補足", "特記", "特記事項"],
+  sourceUrl: ["URL", "url", "オウンドURL", "ジョブパル", "リンク"],
 } as const;
 
 export const HEADER_LABEL_VALUES = new Set<string>([

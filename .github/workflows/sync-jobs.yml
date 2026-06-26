@@ -1,0 +1,35 @@
+name: Sync Jobs from Google Sheets
+
+on:
+  schedule:
+    # JST 09:00 = UTC 00:00
+    - cron: "0 0 * * *"
+    # JST 18:00 = UTC 09:00
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+    inputs:
+      companyKey:
+        description: "Optional company key (omit for all companies)"
+        required: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync jobs from Google Sheets
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "APP_URL and CRON_SECRET secrets are required"
+            exit 1
+          fi
+          COMPANY_KEY="${{ github.event.inputs.companyKey || '' }}"
+          QUERY=""
+          if [ -n "$COMPANY_KEY" ]; then
+            QUERY="?companyKey=${COMPANY_KEY}"
+          fi
+          curl -fsS -X GET \
+            "${APP_URL%/}/api/cron/job-sync${QUERY}" \
+            -H "Authorization: Bearer ${CRON_SECRET}"

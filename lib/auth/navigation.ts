@@ -10,6 +10,7 @@ export type AppRouteId =
   | "dashboard"
   | "candidates"
   | "call-leads"
+  | "jobs"
   | "communications"
   | "kpi"
   | "analytics"
@@ -45,6 +46,12 @@ export const APP_ROUTE_DEFINITIONS: AppRouteDefinition[] = [
     href: "/call-leads",
     label: "架電リスト",
     matchPrefix: "/call-leads",
+  },
+  {
+    id: "jobs",
+    href: "/jobs",
+    label: "案件管理",
+    matchPrefix: "/jobs",
   },
   {
     id: "communications",

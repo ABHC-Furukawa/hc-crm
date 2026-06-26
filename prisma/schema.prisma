@@ -400,6 +400,29 @@ enum GoalPeriodType {
   WEEKLY
 }
 
+// ── Phase 5: Job Operations（案件管理）──
+
+enum JobRecruitmentStatus {
+  OPEN
+  PAUSED
+  CLOSED
+  UNKNOWN
+}
+
+enum JobGender {
+  MALE
+  FEMALE
+  ANY
+  UNKNOWN
+}
+
+enum JobImportLogStatus {
+  PENDING
+  COMPLETED
+  PARTIAL
+  FAILED
+}
+
 // ─────────────────────────────────────────────
 // User — CA担当者
 // ─────────────────────────────────────────────
@@ -1015,6 +1038,9 @@ model Tenant {
   kpiGoals             KpiGoal[]
   activityMetricsDaily ActivityMetricDaily[]
   auditLogs            TenantAuditLog[]
+  jobs                 Job[]
+  rawJobs              RawJob[]
+  jobImportLogs        JobImportLog[]
 
   @@map("tenants")
 }
@@ -1202,6 +1228,85 @@ model KpiGoal {
   @@index([tenantId, periodStart])
   @@index([userId, periodStart])
   @@map("kpi_goals")
+}
+
+// ─────────────────────────────────────────────
+// Job — 求人マスタ（Phase 5 ATS 基盤）
+// ─────────────────────────────────────────────
+
+model Job {
+  id                String               @id @default(uuid()) @db.Uuid
+  tenantId          String               @map("tenant_id") @db.Uuid
+  companyName       String               @map("company_name")
+  jobTitle          String               @map("job_title")
+  location          String?
+  salary            String?
+  employmentType    EmploymentType       @default(UNKNOWN) @map("employment_type")
+  workingHours      String?              @map("working_hours")
+  dormitory         Boolean?
+  dormitoryNote     String?              @map("dormitory_note")
+  shiftType         String?              @map("shift_type")
+  shiftTypeDetail   String?              @map("shift_type_detail") @db.Text
+  hasNightShift     Boolean?             @map("has_night_shift")
+  recruitmentStatus JobRecruitmentStatus @default(UNKNOWN) @map("recruitment_status")
+  gender            JobGender            @default(UNKNOWN) @map("gender")
+  maxAge            Int?                 @map("max_age")
+  recruitmentCount  Int?                 @map("recruitment_count")
+  referralFee       String?              @map("referral_fee")
+  description       String?              @db.Text
+  sourceCompany     String               @map("source_company")
+  sourceSheet       String               @map("source_sheet")
+  rawJobId          String?              @map("raw_job_id") @db.Uuid
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  rawJob RawJob? @relation(fields: [rawJobId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, sourceCompany, sourceSheet, jobTitle, location])
+  @@index([tenantId, companyName])
+  @@index([tenantId, location])
+  @@index([tenantId, employmentType])
+  @@index([tenantId, gender])
+  @@index([tenantId, recruitmentStatus])
+  @@index([tenantId, updatedAt(sort: Desc)])
+  @@map("jobs")
+}
+
+model RawJob {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  companyName String   @map("company_name")
+  sheetName   String   @map("sheet_name")
+  rowNumber   Int      @map("row_number")
+  rawData     Json     @map("raw_data") @db.JsonB
+  importedAt  DateTime @map("imported_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  jobs   Job[]
+
+  @@index([tenantId, companyName, sheetName])
+  @@index([tenantId, importedAt(sort: Desc)])
+  @@map("raw_jobs")
+}
+
+model JobImportLog {
+  id            String             @id @default(uuid()) @db.Uuid
+  tenantId      String             @map("tenant_id") @db.Uuid
+  companyName   String             @map("company_name")
+  importedCount Int                @default(0) @map("imported_count")
+  successCount  Int                @default(0) @map("success_count")
+  failedCount   Int                @default(0) @map("failed_count")
+  importedAt    DateTime           @default(now()) @map("imported_at")
+  status        JobImportLogStatus @default(PENDING)
+  errorMessage  String?            @map("error_message") @db.Text
+  sourceType    ImportSourceType   @default(CSV) @map("source_type")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, importedAt(sort: Desc)])
+  @@map("job_import_logs")
 }
 
 // ─────────────────────────────────────────────

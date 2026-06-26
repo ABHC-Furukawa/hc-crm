@@ -1,0 +1,111 @@
+/** 紹介料の取込下限（円） */
+export const REFERRAL_FEE_MIN_YEN = 400_000;
+
+/** CRM 表示用の標準項目名 */
+export const STANDARD_FIELD_LABELS = {
+  dispatchCompany: "派遣会社名",
+  clientCompany: "派遣先企業名",
+  location: "勤務地",
+  salary: "給与",
+  employmentType: "雇用形態",
+  shiftType: "勤務形態",
+  gender: "性別",
+  maxAge: "上限年齢",
+  referralFee: "紹介料",
+} as const;
+
+/** タブごとに異なる列名を吸収するエイリアス */
+export const COLUMN_ALIASES = {
+  dispatchCompany: [
+    "派遣会社名",
+    "派遣会社",
+    "取引先",
+    "取引先名",
+    "会社名",
+    "派遣元",
+  ],
+  clientCompany: [
+    "派遣先企業名",
+    "派遣先",
+    "配属先企業名",
+    "就業先自動",
+    "取引先企業",
+    "取引先名",
+    "就業先名仮入力",
+    "就業先名",
+    "就業先",
+    "勤務先企業",
+    "勤務先",
+    "企業名 / 工場名",
+    "作業所",
+    "現場名",
+    "クライアント",
+    "企業名",
+    "事業所",
+    "cf / fc / 事業所",
+  ],
+  location: [
+    "勤務地",
+    "就業先住所",
+    "住所",
+    "就業場所",
+    "勤務地・就業場所",
+    "エリア",
+    "所在地 （都道府県）",
+    "所在地 （市区町村以降）",
+    "所在地（都道府県）",
+    "所在地（市区町村以降）",
+  ],
+  salary: [
+    "給与",
+    "月収",
+    "月給",
+    "salary",
+    "賃金",
+    "想定月収　下限",
+    "基本給",
+    "日給・時給",
+    "総支給額",
+  ],
+  employmentType: ["雇用形態", "employmentType", "契約形態", "契約区分"],
+  shiftType: [
+    "勤務形態",
+    "勤務シフト",
+    "シフト",
+    "shiftType",
+    "交替制",
+  ],
+  gender: [
+    "性別",
+    "男女",
+    "女性受入",
+    "女性枠",
+    "男性",
+    "女性",
+    "性別条件",
+  ],
+  maxAge: [
+    "上限年齢",
+    "年齢上限",
+    "年齢（上限）",
+    "年齢 上限",
+    "最大年齢",
+    "年齢",
+  ],
+  referralFee: [
+    "紹介料",
+    "紹介手数料",
+    "手数料",
+    "Fee",
+    "fee",
+    "紹介料（万円）",
+    "紹介料(万円)",
+    "紹介料　万円",
+  ],
+} as const;
+
+export const HEADER_LABEL_VALUES = new Set<string>([
+  ...Object.values(STANDARD_FIELD_LABELS),
+  ...COLUMN_ALIASES.clientCompany,
+  ...COLUMN_ALIASES.dispatchCompany,
+]);

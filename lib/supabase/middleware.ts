@@ -8,6 +8,7 @@ const PUBLIC_PATH_PREFIXES = [
   "/reset-password",
   "/accept-invite",
   "/auth/callback",
+  "/api/cron",
 ];
 
 function isPublicPath(pathname: string): boolean {

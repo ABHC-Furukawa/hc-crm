@@ -25,11 +25,29 @@ jobs:
             echo "APP_URL and CRON_SECRET secrets are required"
             exit 1
           fi
+
           COMPANY_KEY="${{ github.event.inputs.companyKey || '' }}"
-          QUERY=""
+          COMPANY_KEYS="sogo-career ns-haken ns-seishain wt hirayama shinnihon yokota-enterprise ut-aim wic takagi-kogyo nikken brexa-next jisha-haken"
+
+          sync_one() {
+            local key="$1"
+            echo "=== Syncing ${key} ==="
+            curl -fsS -X GET \
+              "${APP_URL%/}/api/cron/job-sync?companyKey=${key}" \
+              -H "Authorization: Bearer ${CRON_SECRET}"
+            echo
+          }
+
           if [ -n "$COMPANY_KEY" ]; then
-            QUERY="?companyKey=${COMPANY_KEY}"
+            sync_one "$COMPANY_KEY"
+            exit 0
           fi
-          curl -fsS -X GET \
-            "${APP_URL%/}/api/cron/job-sync${QUERY}" \
-            -H "Authorization: Bearer ${CRON_SECRET}"
+
+          FAILED=0
+          for key in $COMPANY_KEYS; do
+            if ! sync_one "$key"; then
+              echo "Failed: ${key}"
+              FAILED=1
+            fi
+          done
+          exit $FAILED

@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { syncJobs } from "@/lib/jobs/sync-jobs";
 
+/** 1タブ同期用（GitHub Actions はタブごとに呼び出す） */
+export const maxDuration = 300;
+export const runtime = "nodejs";
+
 function authorizeCron(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false;

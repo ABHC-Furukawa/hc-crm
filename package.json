@@ -21,7 +21,11 @@
     "verify:call-lead-convert": "node scripts/verify-call-lead-convert-button.mjs",
     "verify:user-invite": "node scripts/verify-user-invite.mjs",
     "verify:tenant-limits": "npx tsx scripts/verify-tenant-limits.mjs",
-    "verify:tenant-audit": "npx tsx scripts/verify-tenant-audit.mjs"
+    "verify:tenant-audit": "npx tsx scripts/verify-tenant-audit.mjs",
+    "call-leads:inspect": "npx tsx scripts/inspect-call-lead-sheet.ts",
+    "call-leads:sync": "npx tsx scripts/sync-call-leads.ts",
+    "call-leads:backfill-sheet-fields": "npx tsx scripts/backfill-call-lead-sheet-fields.ts",
+    "verify:call-lead-import": "node scripts/verify-call-lead-import.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",

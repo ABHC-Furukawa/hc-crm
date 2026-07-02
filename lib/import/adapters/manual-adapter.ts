@@ -18,7 +18,14 @@ export class ManualImportAdapter implements ImportSourceAdapter {
 
   parse(): ImportAdapterResult {
     return {
-      rows: [{ ...this.options.row, sourceIndex: 1 }],
+      rows: [
+        {
+          ...this.options.row,
+          sourceIndex: 1,
+          sourceSheet: this.options.sourceName ?? "手動登録",
+          sourceRowNumber: 1,
+        },
+      ],
       errors: [],
     };
   }

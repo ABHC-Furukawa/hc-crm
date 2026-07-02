@@ -192,9 +192,10 @@ export async function findDuplicateMatch(
 export async function isDuplicateLead(
   tenantId: string,
   input: DuplicateCheckInput,
-  tracker: BatchDuplicateTracker
+  tracker: BatchDuplicateTracker,
+  excludeCallLeadId?: string
 ): Promise<boolean> {
   if (findBatchDuplicate(input, tracker)) return true;
-  const match = await findDuplicateMatch(tenantId, input);
+  const match = await findDuplicateMatch(tenantId, input, excludeCallLeadId);
   return match != null;
 }

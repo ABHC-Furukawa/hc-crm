@@ -1,14 +1,19 @@
-import { CallLeadStatus } from "@prisma/client";
+import { CallLeadStatus, ImportSourceType } from "@prisma/client";
 import {
   getPrefecturesForRegion,
   isJapanPrefecture,
   isJapanRegionId,
 } from "@/lib/constants/japan-areas";
+import {
+  CALL_LEAD_DEFAULT_PAGE_SIZE,
+  CALL_LEAD_PAGE_SIZES,
+} from "@/lib/call-leads/import/constants";
 
 export type CallLeadFilters = {
   q?: string;
   status?: CallLeadStatus;
   assignedUserId?: string;
+  sourceType?: ImportSourceType;
   ageMin?: number;
   ageMax?: number;
   region?: string;
@@ -17,9 +22,26 @@ export type CallLeadFilters = {
   nextCallFrom?: string;
   nextCallTo?: string;
   hasNote?: boolean;
+  page?: number;
+  pageSize?: number;
 };
 
 const VALID_STATUSES = new Set<string>(Object.values(CallLeadStatus));
+const VALID_SOURCE_TYPES = new Set<string>(Object.values(ImportSourceType));
+
+function parsePageParam(value: string | undefined): number {
+  if (!value) return 1;
+  const n = Number.parseInt(value, 10);
+  return Number.isFinite(n) && n > 0 ? n : 1;
+}
+
+function parsePageSizeParam(value: string | undefined): number {
+  if (!value) return CALL_LEAD_DEFAULT_PAGE_SIZE;
+  const n = Number.parseInt(value, 10);
+  return (CALL_LEAD_PAGE_SIZES as readonly number[]).includes(n)
+    ? n
+    : CALL_LEAD_DEFAULT_PAGE_SIZE;
+}
 
 function parseIntParam(value: string | undefined): number | undefined {
   if (!value) return undefined;
@@ -42,6 +64,7 @@ export function parseCallLeadFilters(
   };
 
   const status = get("status");
+  const sourceType = get("sourceType");
   const region = get("region");
   const prefecture = get("prefecture");
 
@@ -49,6 +72,10 @@ export function parseCallLeadFilters(
     q: get("q"),
     status:
       status && VALID_STATUSES.has(status) ? (status as CallLeadStatus) : undefined,
+    sourceType:
+      sourceType && VALID_SOURCE_TYPES.has(sourceType)
+        ? (sourceType as ImportSourceType)
+        : undefined,
     assignedUserId: get("assignedUserId"),
     ageMin: parseIntParam(get("ageMin")),
     ageMax: parseIntParam(get("ageMax")),
@@ -58,6 +85,8 @@ export function parseCallLeadFilters(
     nextCallFrom: get("nextCallFrom"),
     nextCallTo: get("nextCallTo"),
     hasNote: parseBoolParam(get("hasNote")),
+    page: parsePageParam(get("page")),
+    pageSize: parsePageSizeParam(get("pageSize")),
   };
 }
 
@@ -65,6 +94,7 @@ export function hasActiveCallLeadFilters(filters: CallLeadFilters): boolean {
   return Boolean(
     filters.q ||
       filters.status ||
+      filters.sourceType ||
       filters.assignedUserId ||
       filters.ageMin != null ||
       filters.ageMax != null ||

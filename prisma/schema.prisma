@@ -1037,6 +1037,8 @@ model Tenant {
   tags                 Tag[]
   callLeads            CallLead[]
   importLogs           ImportLog[]
+  rawCallLeads         RawCallLead[]
+  callLeadImportLogs   CallLeadImportLog[]
   callLeadActivities   CallLeadActivity[]
   kpiGoals             KpiGoal[]
   activityMetricsDaily ActivityMetricDaily[]
@@ -1084,6 +1086,9 @@ model CallLead {
   nextCallMemo         String?          @map("next_call_memo") @db.Text
   sourceType           ImportSourceType @map("source_type")
   sourceName           String?          @map("source_name")
+  sourceSheet          String?          @map("source_sheet")
+  sourceRowNumber      Int?             @map("source_row_number")
+  sourceHash           String?          @map("source_hash")
   sourceId             String?          @map("source_id")
   importedAt           DateTime?        @map("imported_at")
   convertedCandidateId String?          @map("converted_candidate_id") @db.Uuid
@@ -1097,6 +1102,7 @@ model CallLead {
   callAttempts       CallAttempt[]
   notes              CallLeadNote[]
   activities         CallLeadActivity[]
+  rawCallLeads       RawCallLead[]
 
   @@index([tenantId, status])
   @@index([tenantId, nextCallDate])
@@ -1105,6 +1111,9 @@ model CallLead {
   @@index([tenantId, email])
   @@index([tenantId, phone])
   @@index([tenantId, assignedUserId])
+  @@index([tenantId, sourceHash])
+  @@index([tenantId, sourceName, sourceSheet, sourceRowNumber])
+  @@index([tenantId, createdAt(sort: Desc)])
   @@index([convertedCandidateId])
   @@map("call_leads")
 }
@@ -1181,6 +1190,62 @@ model ImportLog {
 
   @@index([tenantId, importedAt(sort: Desc)])
   @@map("import_logs")
+}
+
+// ─────────────────────────────────────────────
+// RawCallLead — 架電リスト取込元データ（加工前）
+// ─────────────────────────────────────────────
+
+model RawCallLead {
+  id                  String           @id @default(uuid()) @db.Uuid
+  tenantId            String           @map("tenant_id") @db.Uuid
+  sourceType          ImportSourceType @map("source_type")
+  sourceName          String?          @map("source_name")
+  sheetName           String           @map("sheet_name")
+  rowNumber           Int              @map("row_number")
+  rawData             Json             @map("raw_data") @db.JsonB
+  sourceHash          String           @map("source_hash")
+  importedAt          DateTime         @map("imported_at")
+  callLeadImportLogId String?          @map("call_lead_import_log_id") @db.Uuid
+  callLeadId          String?          @map("call_lead_id") @db.Uuid
+  createdAt           DateTime         @default(now()) @map("created_at")
+
+  tenant            Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  callLeadImportLog CallLeadImportLog?  @relation(fields: [callLeadImportLogId], references: [id], onDelete: SetNull)
+  callLead          CallLead?           @relation(fields: [callLeadId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, sourceHash])
+  @@index([tenantId, sourceName, sheetName, rowNumber])
+  @@index([tenantId, importedAt(sort: Desc)])
+  @@map("raw_call_leads")
+}
+
+// ─────────────────────────────────────────────
+// CallLeadImportLog — 架電リスト取込履歴
+// ─────────────────────────────────────────────
+
+model CallLeadImportLog {
+  id              String           @id @default(uuid()) @db.Uuid
+  tenantId        String           @map("tenant_id") @db.Uuid
+  sourceType      ImportSourceType @map("source_type")
+  sourceName      String?          @map("source_name")
+  sheetName       String?          @map("sheet_name")
+  importedCount   Int              @default(0) @map("imported_count")
+  createdCount    Int              @default(0) @map("created_count")
+  updatedCount    Int              @default(0) @map("updated_count")
+  duplicateCount  Int              @default(0) @map("duplicate_count")
+  outOfScopeCount Int              @default(0) @map("out_of_scope_count")
+  skippedCount    Int              @default(0) @map("skipped_count")
+  failedCount     Int              @default(0) @map("failed_count")
+  importedAt      DateTime         @default(now()) @map("imported_at")
+  status          ImportLogStatus  @default(PENDING)
+  errorMessage    String?          @map("error_message") @db.Text
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  rawCallLeads RawCallLead[]
+
+  @@index([tenantId, importedAt(sort: Desc)])
+  @@map("call_lead_import_logs")
 }
 
 // ─────────────────────────────────────────────

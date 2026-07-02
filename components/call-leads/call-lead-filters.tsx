@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { SlidersHorizontal, X } from "lucide-react";
-import { CallLeadStatus } from "@prisma/client";
+import { CallLeadStatus, ImportSourceType } from "@prisma/client";
 import type { CallLeadFilters } from "@/lib/call-leads/filters";
 import { hasActiveCallLeadFilters } from "@/lib/call-leads/filters";
 import type { AssignableUser } from "@/lib/users/queries";
@@ -12,7 +12,10 @@ import {
   JAPAN_PREFECTURES,
   JAPAN_REGIONS,
 } from "@/lib/constants/japan-areas";
-import { CALL_LEAD_STATUS_LABELS } from "@/lib/constants/call-lead-labels";
+import {
+  CALL_LEAD_STATUS_LABELS,
+  IMPORT_SOURCE_TYPE_LABELS,
+} from "@/lib/constants/call-lead-labels";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +29,12 @@ const FILTER_STATUSES: CallLeadStatus[] = [
   CallLeadStatus.DUPLICATE,
   CallLeadStatus.OUT_OF_SCOPE,
   CallLeadStatus.CONVERTED,
+];
+
+const FILTER_SOURCE_TYPES: ImportSourceType[] = [
+  ImportSourceType.CSV,
+  ImportSourceType.GOOGLE_SHEET,
+  ImportSourceType.MANUAL,
 ];
 
 const selectClass =
@@ -100,6 +109,23 @@ export function CallLeadFilters({
                   {FILTER_STATUSES.map((status) => (
                     <option key={status} value={status}>
                       {CALL_LEAD_STATUS_LABELS[status]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sourceType">取込元</Label>
+                <select
+                  id="sourceType"
+                  name="sourceType"
+                  defaultValue={filters.sourceType ?? ""}
+                  className={selectClass}
+                >
+                  <option value="">すべて</option>
+                  {FILTER_SOURCE_TYPES.map((sourceType) => (
+                    <option key={sourceType} value={sourceType}>
+                      {IMPORT_SOURCE_TYPE_LABELS[sourceType]}
                     </option>
                   ))}
                 </select>

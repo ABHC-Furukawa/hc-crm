@@ -11,11 +11,10 @@ import {
 import { CANDIDATE_DISPLAY } from "@/lib/constants/candidate-display";
 import { parseCallLeadFilters } from "@/lib/call-leads/filters";
 import {
-  buildCallLeadListWhere,
   callLeadByIdWhere,
   callLeadDetailInclude,
-  callLeadListInclude,
-  callLeadListOrderBy,
+  queryCallLeadsForUser,
+  type CallLeadListResult,
 } from "@/lib/call-leads/queries";
 import { prisma } from "@/lib/prisma";
 import { assertCallLeadAccess } from "@/lib/tenant/access";
@@ -68,15 +67,11 @@ function assertEditableStatus(status: CallLeadStatus): boolean {
 
 export async function getCallLeadsForUser(
   params: Record<string, string | string[] | undefined> = {}
-) {
+): Promise<CallLeadListResult> {
   const { user, tenantId } = await requireTenantContext();
   const filters = parseCallLeadFilters(params);
 
-  return prisma.callLead.findMany({
-    where: buildCallLeadListWhere(user, tenantId, filters),
-    include: callLeadListInclude,
-    orderBy: callLeadListOrderBy,
-  });
+  return queryCallLeadsForUser(user, tenantId, filters);
 }
 
 export async function getCallLeadById(id: string) {

@@ -23,6 +23,16 @@ export function formatDateTime(date: Date | string): string {
   }).format(new Date(date));
 }
 
+/** 一覧向けの短い日時表示（年省略） */
+export function formatCompactDateTime(date: Date | string): string {
+  return new Intl.DateTimeFormat("ja-JP", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(date));
+}
+
 export function formatRelativeTime(
   date: Date | string,
   now: Date = new Date()

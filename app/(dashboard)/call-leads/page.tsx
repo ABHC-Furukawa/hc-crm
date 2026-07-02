@@ -6,6 +6,7 @@ import { requireTenantContext } from "@/lib/tenant/context";
 import { getActiveUsersForAssignment } from "@/lib/users/queries";
 import { DashboardHeader } from "@/components/layout/dashboard-shell";
 import { CallLeadFilters } from "@/components/call-leads/call-lead-filters";
+import { CallLeadPagination } from "@/components/call-leads/call-lead-pagination";
 import { CallLeadTable } from "@/components/call-leads/call-lead-table";
 import { Button } from "@/components/ui/button";
 
@@ -18,7 +19,7 @@ export default async function CallLeadsPage({
   const filters = parseCallLeadFilters(params);
   const { tenantId } = await requireTenantContext();
 
-  const [callLeads, advisors] = await Promise.all([
+  const [listResult, advisors] = await Promise.all([
     getCallLeadsForUser(params),
     getActiveUsersForAssignment(tenantId),
   ]);
@@ -26,10 +27,10 @@ export default async function CallLeadsPage({
   return (
     <>
       <DashboardHeader title="架電リスト" />
-      <main className="flex-1 space-y-4 p-4 sm:p-6">
+      <main className="flex-1 space-y-3 p-3 sm:space-y-4 sm:p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
-            {callLeads.length} 件の架電リード
+            {listResult.total} 件の架電リード
           </p>
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <Button asChild variant="outline" className="w-full sm:w-auto">
@@ -41,7 +42,7 @@ export default async function CallLeadsPage({
             <Button asChild className="w-full sm:w-auto">
               <Link href="/call-leads/import">
                 <Upload className="mr-2 h-4 w-4" />
-                CSV 取込
+                取込
               </Link>
             </Button>
           </div>
@@ -52,7 +53,14 @@ export default async function CallLeadsPage({
           advisors={advisors}
           showAdvisorFilter
         />
-        <CallLeadTable callLeads={callLeads} assignableUsers={advisors} />
+        <CallLeadTable callLeads={listResult.items} assignableUsers={advisors} />
+        <CallLeadPagination
+          filters={filters}
+          page={listResult.page}
+          pageSize={listResult.pageSize}
+          totalPages={listResult.totalPages}
+          total={listResult.total}
+        />
       </main>
     </>
   );

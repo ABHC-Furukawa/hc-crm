@@ -21,18 +21,24 @@ export function CallLeadStatusSelector({
   callLeadId,
   status,
   disabled,
+  compact,
 }: {
   callLeadId: string;
   status: CallLeadStatus;
   disabled?: boolean;
+  compact?: boolean;
 }) {
   const router = useRouter();
+  const sizeClass = compact
+    ? "h-6 max-w-[5.5rem] px-1.5 text-[10px]"
+    : "h-7 max-w-[9rem] px-2.5 text-xs";
 
   if (status === "CONVERTED" || disabled) {
     return (
       <span
         className={cn(
-          "inline-flex h-7 items-center rounded-full border px-2.5 text-xs font-medium",
+          "inline-flex items-center rounded-full border font-medium",
+          sizeClass,
           CALL_LEAD_STATUS_STYLES[status]
         )}
       >
@@ -54,7 +60,8 @@ export function CallLeadStatusSelector({
         defaultValue={status}
         aria-label="ステータス"
         className={cn(
-          "h-7 max-w-[9rem] cursor-pointer truncate rounded-full border px-2.5 text-xs font-medium shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "cursor-pointer truncate rounded-full border font-medium shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          sizeClass,
           CALL_LEAD_STATUS_STYLES[status]
         )}
         onChange={(e) => e.currentTarget.form?.requestSubmit()}

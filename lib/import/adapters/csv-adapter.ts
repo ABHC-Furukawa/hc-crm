@@ -34,6 +34,8 @@ export class CsvImportAdapter implements ImportSourceAdapter {
 
     const rows = objects.map((obj, index) => ({
       sourceIndex: index + 2,
+      sourceSheet: this.options.fileName ?? "CSV",
+      sourceRowNumber: index + 2,
       appliedAt: obj.appliedAt ? new Date(obj.appliedAt) : null,
       name: obj.name ?? "",
       email: obj.email || null,

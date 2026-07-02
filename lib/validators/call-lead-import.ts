@@ -25,6 +25,12 @@ function parseAppliedAt(value: unknown): Date | null | undefined {
 
 export const callLeadImportRowSchema = z.object({
   sourceIndex: z.number().int().positive().optional(),
+  sourceSheet: z.preprocess(emptyToUndefined, z.string().trim().optional()),
+  sourceRowNumber: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().positive().optional()
+  ),
+  rawData: z.record(z.string()).optional(),
   appliedAt: z.preprocess(parseAppliedAt, z.date().nullable().optional()),
   name: z.string().trim().min(1, "氏名は必須です"),
   email: z
@@ -55,6 +61,9 @@ export function validateImportRow(
 export function toValidatedImportRow(data: CallLeadImportRowInput): CallLeadImportRow {
   return {
     sourceIndex: data.sourceIndex,
+    sourceSheet: data.sourceSheet ?? null,
+    sourceRowNumber: data.sourceRowNumber ?? null,
+    rawData: data.rawData,
     appliedAt: data.appliedAt ?? null,
     name: data.name.trim(),
     email: normalizeEmail(data.email ?? null),
@@ -68,11 +77,20 @@ export function toValidatedImportRow(data: CallLeadImportRowInput): CallLeadImpo
 /** CSV ヘッダー → 内部フィールド名 */
 export const CSV_HEADER_MAP: Record<string, keyof CallLeadImportRowInput> = {
   応募日時: "appliedAt",
+  応募日: "appliedAt",
+  日付: "appliedAt",
   氏名: "name",
+  名前: "name",
+  求職者: "name",
   メールアドレス: "email",
+  メール: "email",
   電話番号: "phone",
+  電話: "phone",
   年齢: "age",
   応募地: "applicationArea",
+  エリア: "applicationArea",
+  都道府県: "applicationArea",
+  勤務希望地: "applicationArea",
   applied_at: "appliedAt",
   appliedAt: "appliedAt",
   name: "name",

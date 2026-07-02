@@ -27,10 +27,11 @@ export const CALL_LEAD_STATUS_STYLES: Record<CallLeadStatus, string> = {
   CONVERTED: "bg-emerald-100 text-emerald-800 border-emerald-200",
 };
 
-/** DUPLICATE / OUT_OF_SCOPE は一覧でグレーアウト */
+/** DUPLICATE / OUT_OF_SCOPE / CONVERTED は一覧でグレーアウト */
 export const CALL_LEAD_GRAYED_OUT_STATUSES: CallLeadStatus[] = [
   CallLeadStatus.DUPLICATE,
   CallLeadStatus.OUT_OF_SCOPE,
+  CallLeadStatus.CONVERTED,
 ];
 
 export function isCallLeadGrayedOut(status: CallLeadStatus): boolean {

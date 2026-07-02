@@ -31,17 +31,20 @@ export function CallLeadNoteCell({
   noteCount,
   status,
   className,
+  compact,
 }: {
   callLeadId: string;
   notes: CallLeadListItem["notes"];
   noteCount: number;
   status: CallLeadStatus;
   className?: string;
+  compact?: boolean;
 }) {
   const router = useRouter();
   const readOnly = status === "CONVERTED";
   const latest = notes[0];
   const [open, setOpen] = useState(false);
+  const truncateLen = compact ? 24 : 60;
 
   const [state, formAction, pending] = useActionState(
     saveCallLeadNoteAction.bind(null, callLeadId),
@@ -61,7 +64,8 @@ export function CallLeadNoteCell({
         <button
           type="button"
           className={cn(
-            "min-w-0 flex-1 text-left text-sm",
+            "min-w-0 flex-1 text-left",
+            compact ? "text-[10px] leading-tight" : "text-sm",
             !readOnly && "hover:text-primary"
           )}
           onClick={() => !readOnly && setOpen(true)}
@@ -70,8 +74,10 @@ export function CallLeadNoteCell({
         >
           {latest ? (
             <>
-              <span className="line-clamp-2 text-foreground">{truncate(latest.content)}</span>
-              {noteCount > 1 && (
+              <span className={cn("text-foreground", compact ? "line-clamp-1" : "line-clamp-2")}>
+                {truncate(latest.content, truncateLen)}
+              </span>
+              {noteCount > 1 && !compact && (
                 <span className="mt-0.5 block text-xs text-muted-foreground">
                   他 {noteCount - 1} 件
                 </span>
@@ -83,7 +89,7 @@ export function CallLeadNoteCell({
             </span>
           )}
         </button>
-        {!readOnly && (
+        {!readOnly && !compact && (
           <Button
             type="button"
             variant="ghost"

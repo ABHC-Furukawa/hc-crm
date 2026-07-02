@@ -1,7 +1,9 @@
 import type { Prisma, User } from "@prisma/client";
 import { callLeadAccessFilter } from "@/lib/tenant/access";
 import type { CallLeadFilters } from "@/lib/call-leads/filters";
+import { CALL_LEAD_DEFAULT_PAGE_SIZE } from "@/lib/call-leads/import/constants";
 import { getPrefecturesForRegion } from "@/lib/constants/japan-areas";
+import { prisma } from "@/lib/prisma";
 
 export const callLeadActivityInclude = {
   user: { select: { id: true, name: true } },
@@ -139,6 +141,7 @@ export function buildCallLeadListWhere(
   return {
     ...base,
     ...(filters.status ? { status: filters.status } : {}),
+    ...(filters.sourceType ? { sourceType: filters.sourceType } : {}),
     ...(filters.assignedUserId ? { assignedUserId: filters.assignedUserId } : {}),
     ...(search ?? {}),
     ...ageFilter,
@@ -149,6 +152,45 @@ export function buildCallLeadListWhere(
 }
 
 export const callLeadListOrderBy: Prisma.CallLeadOrderByWithRelationInput[] = [
+  { sourceRowNumber: { sort: "desc", nulls: "last" } },
   { appliedAt: "desc" },
   { createdAt: "desc" },
 ];
+
+export type CallLeadListResult = {
+  items: CallLeadListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
+export async function queryCallLeadsForUser(
+  user: User,
+  tenantId: string,
+  filters: CallLeadFilters = {}
+): Promise<CallLeadListResult> {
+  const where = buildCallLeadListWhere(user, tenantId, filters);
+  const pageSize = filters.pageSize ?? CALL_LEAD_DEFAULT_PAGE_SIZE;
+  const page = filters.page ?? 1;
+  const skip = (page - 1) * pageSize;
+
+  const [total, items] = await Promise.all([
+    prisma.callLead.count({ where }),
+    prisma.callLead.findMany({
+      where,
+      include: callLeadListInclude,
+      orderBy: callLeadListOrderBy,
+      skip,
+      take: pageSize,
+    }),
+  ]);
+
+  return {
+    items,
+    total,
+    page,
+    pageSize,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+  };
+}

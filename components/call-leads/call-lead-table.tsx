@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { CallLeadListItem } from "@/lib/call-leads/queries";
 import type { AssignableUser } from "@/lib/users/queries";
 import { isCallLeadGrayedOut } from "@/lib/constants/call-lead-labels";
-import { formatDate, formatDateTime, cn } from "@/lib/utils";
+import { formatCompactDateTime, formatDate, cn } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -40,81 +40,134 @@ export function CallLeadTable({
 
   return (
     <>
-      <div className="hidden overflow-x-auto lg:block rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>応募日時</TableHead>
-              <TableHead>氏名</TableHead>
-              <TableHead>メール</TableHead>
-              <TableHead>電話番号</TableHead>
-              <TableHead>年齢</TableHead>
-              <TableHead>応募地</TableHead>
-              <TableHead>ステータス</TableHead>
-              <TableHead>担当</TableHead>
-              <TableHead className="text-right">発信回数</TableHead>
-              <TableHead>最終架電</TableHead>
-              <TableHead>次回架電</TableHead>
-              <TableHead className="min-w-[140px]">Note</TableHead>
-              <TableHead className="min-w-[120px]">操作</TableHead>
+      <div className="hidden max-h-[calc(100vh-13rem)] overflow-auto rounded-lg border md:block">
+        <Table className="text-xs">
+          <TableHeader className="sticky top-0 z-10 bg-background shadow-sm">
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="h-8 whitespace-nowrap px-1.5 text-[11px]">応募</TableHead>
+              <TableHead className="h-8 whitespace-nowrap px-1.5 text-[11px]">氏名</TableHead>
+              <TableHead className="hidden h-8 whitespace-nowrap px-1.5 text-[11px] xl:table-cell">
+                メール
+              </TableHead>
+              <TableHead className="h-8 whitespace-nowrap px-1.5 text-[11px]">電話</TableHead>
+              <TableHead className="h-8 whitespace-nowrap px-1.5 text-[11px]">年齢</TableHead>
+              <TableHead className="hidden h-8 whitespace-nowrap px-1.5 text-[11px] lg:table-cell">
+                応募地
+              </TableHead>
+              <TableHead className="h-8 whitespace-nowrap px-1.5 text-[11px]">状態</TableHead>
+              <TableHead className="h-8 whitespace-nowrap px-1.5 text-[11px]">担当</TableHead>
+              <TableHead className="hidden h-8 whitespace-nowrap px-1.5 text-right text-[11px] lg:table-cell">
+                発信
+              </TableHead>
+              <TableHead className="hidden h-8 whitespace-nowrap px-1.5 text-[11px] 2xl:table-cell">
+                最終架電
+              </TableHead>
+              <TableHead className="hidden h-8 whitespace-nowrap px-1.5 text-[11px] xl:table-cell">
+                次回
+              </TableHead>
+              <TableHead className="h-8 min-w-[88px] px-1.5 text-[11px]">Note</TableHead>
+              <TableHead className="h-8 w-[72px] px-1.5 text-[11px]">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {callLeads.map((lead) => (
-              <TableRow key={lead.id}>
-                <TableCell className={cn("whitespace-nowrap text-muted-foreground", mutedCellClassName(lead.status))}>
-                  {lead.appliedAt ? formatDateTime(lead.appliedAt) : "—"}
+              <TableRow key={lead.id} className="hover:bg-muted/40">
+                <TableCell
+                  className={cn(
+                    "whitespace-nowrap px-1.5 py-1 text-muted-foreground",
+                    mutedCellClassName(lead.status)
+                  )}
+                >
+                  {lead.appliedAt ? formatCompactDateTime(lead.appliedAt) : "—"}
                 </TableCell>
-                <TableCell className={mutedCellClassName(lead.status)}>
+                <TableCell className={cn("max-w-[7rem] px-1.5 py-1", mutedCellClassName(lead.status))}>
                   <Link
                     href={`/call-leads/${lead.id}`}
-                    className="font-medium text-primary hover:underline"
+                    className="block truncate font-medium text-primary hover:underline"
+                    title={lead.name}
                   >
                     {lead.name}
                   </Link>
                 </TableCell>
-                <TableCell className={cn("max-w-[160px] truncate", mutedCellClassName(lead.status))}>
+                <TableCell
+                  className={cn(
+                    "hidden max-w-[120px] truncate px-1.5 py-1 xl:table-cell",
+                    mutedCellClassName(lead.status)
+                  )}
+                  title={lead.email ?? undefined}
+                >
                   {lead.email ?? "—"}
                 </TableCell>
-                <TableCell className={mutedCellClassName(lead.status)}>
+                <TableCell className={cn("px-1.5 py-1", mutedCellClassName(lead.status))}>
                   <CallLeadPhoneActions
                     callLeadId={lead.id}
                     phone={lead.phone}
                     status={lead.status}
+                    compact
                   />
                 </TableCell>
-                <TableCell className={mutedCellClassName(lead.status)}>{lead.age ?? "—"}</TableCell>
-                <TableCell className={mutedCellClassName(lead.status)}>{lead.applicationArea ?? "—"}</TableCell>
-                <TableCell className={mutedCellClassName(lead.status)}>
+                <TableCell className={cn("px-1.5 py-1", mutedCellClassName(lead.status))}>
+                  {lead.age ?? "—"}
+                </TableCell>
+                <TableCell
+                  className={cn(
+                    "hidden max-w-[4.5rem] truncate px-1.5 py-1 lg:table-cell",
+                    mutedCellClassName(lead.status)
+                  )}
+                  title={lead.applicationArea ?? undefined}
+                >
+                  {lead.applicationArea ?? "—"}
+                </TableCell>
+                <TableCell className={cn("px-1 py-1", mutedCellClassName(lead.status))}>
                   <CallLeadStatusSelector
                     callLeadId={lead.id}
                     status={lead.status}
+                    compact
                   />
                 </TableCell>
-                <TableCell className={mutedCellClassName(lead.status)}>
+                <TableCell className={cn("px-1 py-1", mutedCellClassName(lead.status))}>
                   <CallLeadAssigneeSelector
                     callLeadId={lead.id}
                     assignedUserId={lead.assignedUserId}
                     status={lead.status}
                     assignableUsers={assignableUsers}
+                    compact
                   />
                 </TableCell>
-                <TableCell className={cn("text-right", mutedCellClassName(lead.status))}>{lead.callCount}</TableCell>
-                <TableCell className={cn("whitespace-nowrap text-muted-foreground", mutedCellClassName(lead.status))}>
-                  {lead.lastCalledAt ? formatDateTime(lead.lastCalledAt) : "—"}
+                <TableCell
+                  className={cn(
+                    "hidden px-1.5 py-1 text-right lg:table-cell",
+                    mutedCellClassName(lead.status)
+                  )}
+                >
+                  {lead.callCount}
                 </TableCell>
-                <TableCell className={cn("whitespace-nowrap", mutedCellClassName(lead.status))}>
+                <TableCell
+                  className={cn(
+                    "hidden whitespace-nowrap px-1.5 py-1 text-muted-foreground 2xl:table-cell",
+                    mutedCellClassName(lead.status)
+                  )}
+                >
+                  {lead.lastCalledAt ? formatCompactDateTime(lead.lastCalledAt) : "—"}
+                </TableCell>
+                <TableCell
+                  className={cn(
+                    "hidden whitespace-nowrap px-1.5 py-1 xl:table-cell",
+                    mutedCellClassName(lead.status)
+                  )}
+                >
                   {lead.nextCallDate ? formatDate(lead.nextCallDate) : "—"}
                 </TableCell>
-                <TableCell className={cn("max-w-[200px]", mutedCellClassName(lead.status))}>
+                <TableCell className={cn("max-w-[88px] px-1 py-1", mutedCellClassName(lead.status))}>
                   <CallLeadNoteCell
                     callLeadId={lead.id}
                     notes={lead.notes}
                     noteCount={lead._count.notes}
                     status={lead.status}
+                    compact
                   />
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-1 py-1">
                   <CallLeadConvertButton
                     callLeadId={lead.id}
                     convertedCandidateId={lead.convertedCandidateId}
@@ -127,7 +180,7 @@ export function CallLeadTable({
         </Table>
       </div>
 
-      <div className="space-y-3 lg:hidden">
+      <div className="space-y-3 md:hidden">
         {callLeads.map((lead) => (
           <div
             key={lead.id}
@@ -137,7 +190,7 @@ export function CallLeadTable({
               <Link href={`/call-leads/${lead.id}`} className="min-w-0 flex-1">
                 <p className="font-medium">{lead.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {lead.appliedAt ? formatDateTime(lead.appliedAt) : "応募日未設定"}
+                  {lead.appliedAt ? formatCompactDateTime(lead.appliedAt) : "応募日未設定"}
                 </p>
               </Link>
               <CallLeadStatusSelector callLeadId={lead.id} status={lead.status} />

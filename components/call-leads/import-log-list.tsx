@@ -1,4 +1,4 @@
-import type { ImportLog } from "@prisma/client";
+import type { CallLeadImportLog } from "@prisma/client";
 import {
   formatCallLeadSource,
   IMPORT_LOG_STATUS_LABELS,
@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-export function ImportLogList({ logs }: { logs: ImportLog[] }) {
+export function ImportLogList({ logs }: { logs: CallLeadImportLog[] }) {
   if (logs.length === 0) {
     return null;
   }
@@ -30,9 +30,11 @@ export function ImportLogList({ logs }: { logs: ImportLog[] }) {
             <TableRow>
               <TableHead>日時</TableHead>
               <TableHead>ソース</TableHead>
-              <TableHead>取込</TableHead>
+              <TableHead>新規</TableHead>
+              <TableHead>更新</TableHead>
               <TableHead>重複</TableHead>
               <TableHead>対象外</TableHead>
+              <TableHead>スキップ</TableHead>
               <TableHead>状態</TableHead>
             </TableRow>
           </TableHeader>
@@ -43,11 +45,13 @@ export function ImportLogList({ logs }: { logs: ImportLog[] }) {
                   {formatDateTime(log.importedAt)}
                 </TableCell>
                 <TableCell>
-                  {formatCallLeadSource(log.sourceType, log.sourceName)}
+                  {formatCallLeadSource(log.sourceType, log.sourceName ?? log.sheetName)}
                 </TableCell>
-                <TableCell>{log.importedCount}</TableCell>
+                <TableCell>{log.createdCount}</TableCell>
+                <TableCell>{log.updatedCount}</TableCell>
                 <TableCell>{log.duplicateCount}</TableCell>
                 <TableCell>{log.outOfScopeCount}</TableCell>
+                <TableCell>{log.skippedCount}</TableCell>
                 <TableCell>{IMPORT_LOG_STATUS_LABELS[log.status]}</TableCell>
               </TableRow>
             ))}

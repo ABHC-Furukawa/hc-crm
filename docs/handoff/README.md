@@ -7,10 +7,10 @@
 
 1. **[next-chat-handoff.md](./next-chat-handoff.md)** を開く（貼り付け用指示文）
 2. 新チャットの最初のメッセージに指示文を貼り付ける
-3. 詳細は **[phase-5a-production-handoff.md](./phase-5a-production-handoff.md)** を参照
+3. 詳細は **[phase-6-call-lead-import.md](./phase-6-call-lead-import.md)** を参照
 
 ```
-@docs/handoff/phase-5a-production-handoff.md と @docs/handoff/next-chat-handoff.md を参照して続きを実装してください。
+@docs/handoff/phase-6-call-lead-import.md と @docs/handoff/next-chat-handoff.md を参照して Phase 6 を実装してください。
 ```
 
 ## ロードマップ
@@ -24,14 +24,18 @@
 | 3 | ✅ 完了 | [phase-3.md](./phase-3.md) / [phase-3-kpi-handoff.md](./phase-3-kpi-handoff.md) | KPI / 月次目標 |
 | 3.5 | ✅ 完了 | [current-state-handoff.md](./current-state-handoff.md) | ファネル分析 / 経営ダッシュボード |
 | R1–R3 | ✅ 完了 | [current-state-handoff.md](./current-state-handoff.md) | ロール階層 + DEVELOP テナント横断 |
-| KPI cron | 🔄 コード済 | [current-state-handoff.md](./current-state-handoff.md) | 日次キャッシュ（secret・backfill 未設定） |
 | 4 | ✅ 完了 | [phase-4d-handoff.md](./phase-4d-handoff.md) | SaaS 化（テナント分離 / 設定 / 招待 / プラン・上限・監査） |
-| 5a | 🔄 コード済 | [phase-5a-production-handoff.md](./phase-5a-production-handoff.md) | 本番公開・招待 URL・KPI 通過月・CA 稼働・DEVELOP 直接作成 |
-| 5 | 未着手 | [phase-5.md](./phase-5.md) | PBX Webhook 統合 |
+| 5a | ✅ 完了 | [phase-5a-production-handoff.md](./phase-5a-production-handoff.md) | 本番公開・招待 URL・KPI 通過月・CA 稼働 |
+| 5 — Job Operations | ✅ 完了 | [phase-5.md](./phase-5.md) | Google Sheets → Job 同期、案件一覧・詳細、列マッピング、cron |
+| 5B — Candidate × Job | ✅ 完了 | [phase-5.md](./phase-5.md) | 候補者案件 ↔ ATS Job 紐付け |
+| KPI cron | ✅ 稼働 | [current-state-handoff.md](./current-state-handoff.md) | 日次キャッシュ（GitHub Actions） |
+| Job sync cron | ✅ 稼働 | [phase-5.md](./phase-5.md) | 1日2回・タブ分割同期 |
+| **6 — CallLead 大量取込** | 🚧 **Step 1〜5 完了（未コミット）** | **[phase-6-call-lead-import.md](./phase-6-call-lead-import.md)** | **Sheets → RawCallLead → CallLead DB 化。次: bulk 取込・デプロイ** |
+| PBX Webhook | 未着手 | [phase-5.md](./phase-5.md) § PBX | 発信 Webhook 統合（後続） |
 
 **→ 次チャット用:** [next-chat-handoff.md](./next-chat-handoff.md)  
-**→ 現状詳細:** [phase-5a-production-handoff.md](./phase-5a-production-handoff.md)  
-**→ Phase 5 PBX:** [phase-5.md](./phase-5.md)
+**→ Phase 6 設計:** [phase-6-call-lead-import.md](./phase-6-call-lead-import.md)  
+**→ 現状詳細:** [current-state-handoff.md](./current-state-handoff.md)
 
 ## プロジェクト基本情報
 
@@ -58,33 +62,24 @@
 6. テナントコンテキスト: `lib/tenant/context.ts`（DEVELOP 切替 + `cache()`）
 7. ルート RBAC: `lib/auth/navigation.ts`
 8. **Client Component から Prisma を transitively import しない** — 定数は `lib/tenant/plan-options.ts` 等に分離
+9. **大量データ:** CallLead 一覧は server-side pagination 必須（Phase 6）
 
 ## ディレクトリ構成（主要）
 
 ```
 app/
-  (auth)/login/, forgot-password/, reset-password/
-  auth/callback/
   (dashboard)/
-    dashboard/, candidates/, communications/
-    call-leads/, kpi/, kpi/goals, analytics/
-    team-status/                   # CA 稼働状況（MANAGER+）
-    settings/                      # tenant, members, tenants（DEVELOP）
-    users/                         # → /settings/members へリダイレクト
-  api/calls/initiate/
-  api/cron/activity-metrics-daily/
-components/
-  candidates/, call-leads/, kpi/, analytics/, users/
-  team-status/                     # ca-presence-panel
-  layout/                          # sidebar, develop-tenant-switcher
+    call-leads/                    # 架電リスト（Phase 6 で pagination 強化）
+    jobs/                          # 案件 ATS（Phase 5）
+  api/cron/
+    job-sync/                      # 案件同期 cron
+    activity-metrics-daily/        # KPI cron
 lib/
-  actions/                         # kpi, analytics, users, tenant, auth
-  auth/                            # session, presence, rbac, navigation
-  tenant/                          # context, plan-config, plan-options, enforce-limits
-  kpi/, analytics/
-  users/lifecycle.ts, invite.ts
-  utils/site-url.ts
-prisma/schema.prisma
-scripts/                           # verify-*, backfill, promote-user-develop
-.github/workflows/sync-kpi-daily.yml
+  call-leads/                      # 架電ドメイン
+  import/                          # 現行 ImportService（CSV/Manual）
+  jobs/                            # 案件同期（Phase 5・Sheets 参考実装）
+  import/ → call-leads/import/     # Phase 6 で拡張予定
+.github/workflows/
+  sync-jobs.yml                    # 案件 cron
+  sync-kpi-daily.yml               # KPI cron
 ```

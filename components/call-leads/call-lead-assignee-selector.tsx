@@ -8,21 +8,26 @@ import { formatUserSurname } from "@/lib/users/display";
 import { cn } from "@/lib/utils";
 
 const selectClass =
-  "h-8 max-w-[6.5rem] cursor-pointer truncate rounded-md border border-input bg-transparent px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "cursor-pointer truncate rounded-md border border-input bg-transparent shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function CallLeadAssigneeSelector({
   callLeadId,
   assignedUserId,
   status,
   assignableUsers,
+  compact,
 }: {
   callLeadId: string;
   assignedUserId: string | null;
   status: CallLeadStatus;
   assignableUsers: AssignableUser[];
+  compact?: boolean;
 }) {
   const router = useRouter();
   const readOnly = status === "CONVERTED";
+  const sizeClass = compact
+    ? "h-6 max-w-[4.5rem] px-1 text-[10px]"
+    : "h-8 max-w-[6.5rem] px-2 text-sm";
 
   const currentUser = assignableUsers.find((u) => u.id === assignedUserId);
   const displayLabel = currentUser
@@ -31,7 +36,9 @@ export function CallLeadAssigneeSelector({
 
   if (readOnly) {
     return (
-      <span className="text-sm text-muted-foreground">{displayLabel}</span>
+      <span className={cn("text-muted-foreground", compact ? "text-[10px]" : "text-sm")}>
+        {displayLabel}
+      </span>
     );
   }
 
@@ -48,7 +55,7 @@ export function CallLeadAssigneeSelector({
         defaultValue={assignedUserId ?? ""}
         aria-label="担当者"
         title={currentUser?.name ?? "担当未設定"}
-        className={cn(selectClass, !assignedUserId && "text-muted-foreground")}
+        className={cn(selectClass, sizeClass, !assignedUserId && "text-muted-foreground")}
         onChange={(e) => e.currentTarget.form?.requestSubmit()}
       >
         <option value="">未設定</option>

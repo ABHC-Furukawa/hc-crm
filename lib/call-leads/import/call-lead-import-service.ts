@@ -27,6 +27,7 @@ import {
   resolveStatusFromSheet,
   type AssigneeLookupUser,
 } from "@/lib/call-leads/import/resolve-sheet-fields";
+import { buildSourceHashFromRow } from "@/lib/call-leads/import/source-hash";
 import {
   applyGoogleSheetSyncWindow,
   formatSyncWindowSummary,

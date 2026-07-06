@@ -17,7 +17,7 @@ export const resumeDetailInclude = {
   updatedBy: { select: { id: true, name: true } },
   exportLogs: {
     orderBy: { exportedAt: "desc" as const },
-    take: 5,
+    take: 20,
     include: { exportedBy: { select: { id: true, name: true } } },
   },
 } satisfies Prisma.ResumeInclude;

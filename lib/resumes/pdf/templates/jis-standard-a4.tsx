@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Document,
   Image,
@@ -115,7 +116,22 @@ const styles = StyleSheet.create({
   },
   bodyText: {
     fontSize: 9,
-    whiteSpace: "pre-wrap",
+    lineHeight: 1.5,
+  },
+  continuationPage: {
+    fontFamily: "NotoSansJP",
+    fontSize: 9,
+    lineHeight: 1.5,
+    paddingTop: 42,
+    paddingBottom: 42,
+    paddingHorizontal: 34,
+    color: "#111111",
+  },
+  pageHeader: {
+    fontSize: 8,
+    color: "#777777",
+    textAlign: "right",
+    marginBottom: 12,
   },
   emptyText: {
     color: "#888888",
@@ -233,11 +249,22 @@ export function JisStandardA4Document({ data }: { data: ResumePdfData }) {
           ))
         )}
 
+      </Page>
+
+      <Page size="A4" style={styles.continuationPage}>
+        <Text style={styles.pageHeader}>
+          {data.fullName} — 自己PR・志望動機（2ページ目）
+        </Text>
+
         <SectionTitle>自己PR</SectionTitle>
-        <Text style={styles.bodyText}>{data.selfPr || "—"}</Text>
+        <Text style={styles.bodyText} wrap>
+          {data.selfPr || "—"}
+        </Text>
 
         <SectionTitle>志望動機</SectionTitle>
-        <Text style={styles.bodyText}>{data.motivation || "—"}</Text>
+        <Text style={styles.bodyText} wrap>
+          {data.motivation || "—"}
+        </Text>
       </Page>
     </Document>
   );

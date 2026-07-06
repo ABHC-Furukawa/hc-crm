@@ -9,6 +9,8 @@ import { DashboardHeader } from "@/components/layout/dashboard-shell";
 import { ResumePreviewDocument } from "@/components/resumes/resume-preview-document";
 import { ResumePdfActions, ResumePdfFrame } from "@/components/resumes/resume-pdf-actions";
 import { ResumeBackLink } from "@/components/resumes/resume-nav-links";
+import { ResumeExportHistory } from "@/components/resumes/resume-export-history";
+import { ResumeStatusActions } from "@/components/resumes/resume-status-actions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -38,6 +40,7 @@ export default async function ResumePreviewPage({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <ResumeBackLink resume={resume} />
           <div className="flex flex-wrap items-center gap-2">
+            <ResumeStatusActions resumeId={id} status={resume.status} />
             <ResumePdfActions resumeId={id} />
             <Button asChild>
               <Link href={`/resumes/${id}/edit`}>
@@ -67,6 +70,8 @@ export default async function ResumePreviewPage({
             <ResumePdfFrame resumeId={id} />
           </CardContent>
         </Card>
+
+        <ResumeExportHistory exportLogs={resume.exportLogs} />
 
         <Card>
           <CardHeader>

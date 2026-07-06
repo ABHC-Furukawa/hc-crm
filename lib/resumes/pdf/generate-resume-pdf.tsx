@@ -1,3 +1,4 @@
+import React from "react";
 import { renderToBuffer } from "@react-pdf/renderer";
 import type { ResumeDetail } from "@/lib/resumes/queries";
 import { buildResumePdfData } from "@/lib/resumes/pdf/build-pdf-data";

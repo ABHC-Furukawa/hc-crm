@@ -25,7 +25,9 @@
     "call-leads:inspect": "npx tsx scripts/inspect-call-lead-sheet.ts",
     "call-leads:sync": "npx tsx scripts/sync-call-leads.ts",
     "call-leads:backfill-sheet-fields": "npx tsx scripts/backfill-call-lead-sheet-fields.ts",
-    "verify:call-lead-import": "node scripts/verify-call-lead-import.mjs"
+    "verify:call-lead-import": "node scripts/verify-call-lead-import.mjs",
+    "verify:resume-access": "npx tsx scripts/verify-resume-access.mjs",
+    "verify:resume-pdf": "npx tsx scripts/verify-resume-pdf.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",

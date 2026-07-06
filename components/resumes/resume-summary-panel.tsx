@@ -7,7 +7,6 @@ import { FileText, RefreshCw } from "lucide-react";
 import { createResumeFromCandidateAction, syncResumeFromCandidateAction } from "@/lib/actions/resumes";
 import type { ResumeSummaryItem } from "@/lib/resumes/queries";
 import {
-  RESUME_STATUS_LABELS,
   RESUME_TEMPLATE_LABELS,
 } from "@/lib/resumes/constants";
 import { formatDateTime } from "@/lib/utils";
@@ -19,7 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { ResumeStatusBadge } from "@/components/resumes/resume-status-actions";
 
 export function ResumeSummaryPanel({
   candidateId,
@@ -70,9 +69,7 @@ export function ResumeSummaryPanel({
             {RESUME_TEMPLATE_LABELS[resume.templateType]}
           </CardDescription>
         </div>
-        <Badge variant={resume.status === "READY" ? "default" : "secondary"}>
-          {RESUME_STATUS_LABELS[resume.status]}
-        </Badge>
+        <ResumeStatusBadge status={resume.status} />
       </CardHeader>
       <CardContent className="space-y-4">
         <dl className="grid gap-2 text-sm sm:grid-cols-2">

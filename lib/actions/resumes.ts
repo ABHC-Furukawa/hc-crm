@@ -389,3 +389,30 @@ export async function markResumeReadyAction(
   revalidateResumePaths(resumeId, resume.candidateId);
   return { success: true };
 }
+
+export async function markResumeDraftAction(
+  resumeId: string
+): Promise<ResumeActionState> {
+  const { user, resume } = await assertResumeAccess(resumeId);
+
+  await prisma.$transaction(async (tx) => {
+    await tx.resume.update({
+      where: { id: resumeId },
+      data: {
+        status: ResumeStatus.DRAFT,
+        updatedById: user.id,
+      },
+    });
+
+    await logResumeActivity(tx, {
+      candidateId: resume.candidateId,
+      userId: user.id,
+      action: ActivityAction.RESUME_UPDATED,
+      resumeId,
+      metadata: { status: ResumeStatus.DRAFT },
+    });
+  });
+
+  revalidateResumePaths(resumeId, resume.candidateId);
+  return { success: true };
+}

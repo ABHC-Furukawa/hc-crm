@@ -521,7 +521,7 @@ model Candidate {
 
   // 就業状況
   employmentStatus     EmploymentStatus? @map("employment_status")
-  availableDate        DateTime?         @map("available_date") @db.Date
+  availableDate        String?           @map("available_date") @db.Text
   latestEmploymentType EmploymentType?   @map("latest_employment_type")
   dispatchCompany      String?           @map("dispatch_company")
   resignationReason    String?           @map("resignation_reason") @db.Text

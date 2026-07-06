@@ -19,6 +19,35 @@ export function estimateGrossMonthlySalary(netManYen: number): number {
   return Math.round(netManYen / 0.78);
 }
 
+/** 氏名表示用（姓・名を1欄にまとめる） */
+export function joinCandidateFullName(lastName: string, firstName: string): string {
+  const last = lastName.trim();
+  const first = firstName.trim();
+  if (!first || first === "—") return last;
+  return `${last} ${first}`.trim();
+}
+
+/** 氏名1欄入力を姓・名に分割（スペース区切り。無い場合は姓のみ） */
+export function splitCandidateFullName(input: string): {
+  lastName: string;
+  firstName: string;
+} {
+  const trimmed = input.trim().replace(/\u3000/g, " ").replace(/\s+/g, " ").trim();
+  if (!trimmed) return { lastName: "", firstName: "" };
+
+  const spaceIdx = trimmed.indexOf(" ");
+  if (spaceIdx >= 0) {
+    const lastName = trimmed.slice(0, spaceIdx).trim();
+    const firstName = trimmed.slice(spaceIdx + 1).trim();
+    return {
+      lastName,
+      firstName: firstName || "—",
+    };
+  }
+
+  return { lastName: trimmed, firstName: "—" };
+}
+
 /** 生年月日文字列 (YYYY-MM-DD) から年齢を計算 */
 export function calculateAgeFromBirthDate(birthDate: string): number | null {
   if (!birthDate) return null;

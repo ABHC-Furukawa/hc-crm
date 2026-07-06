@@ -122,7 +122,7 @@ function CandidateProfileView({
           />
           <ProfileField
             label="稼働可能日"
-            value={candidate.availableDate ? formatDate(candidate.availableDate) : "—"}
+            value={candidate.availableDate?.trim() || "—"}
           />
           <ProfileField
             label="直近の雇用形態"

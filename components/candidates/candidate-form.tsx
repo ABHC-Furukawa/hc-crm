@@ -18,7 +18,9 @@ import {
   calculateAgeFromBirthDate,
   estimateGrossMonthlySalary,
   formatPostalCode,
+  joinCandidateFullName,
   lookupAddressByPostalCode,
+  splitCandidateFullName,
 } from "@/lib/utils/candidate-form-helpers";
 import {
   CANDIDATE_STATUS_LABELS,
@@ -72,6 +74,9 @@ export function CandidateForm({ candidate, mode, onSaved }: CandidateFormProps) 
 
   const initialLastName = val("lastName", candidate?.lastName ?? "");
   const initialFirstName = val("firstName", candidate?.firstName ?? "");
+  const initialFullName =
+    val("fullName") ||
+    joinCandidateFullName(initialLastName, initialFirstName);
   const initialFurigana =
     val("furigana") || candidate?.furigana || displayFurigana(candidate ?? {}) || "";
   const initialBirthDate = val("birthDate", toDateInputValue(candidate?.birthDate));
@@ -91,6 +96,7 @@ export function CandidateForm({ candidate, mode, onSaved }: CandidateFormProps) 
     candidate?.qualifications ??
     [];
 
+  const [fullName, setFullName] = useState(initialFullName);
   const [lastName, setLastName] = useState(initialLastName);
   const [firstName, setFirstName] = useState(initialFirstName);
   const [furigana, setFurigana] = useState(initialFurigana);
@@ -132,6 +138,13 @@ export function CandidateForm({ candidate, mode, onSaved }: CandidateFormProps) 
   // Reset local state when server returns preserved values after error
   useEffect(() => {
     if (!state.values) return;
+    setFullName(
+      state.values.fullName ??
+        joinCandidateFullName(
+          state.values.lastName ?? "",
+          state.values.firstName ?? ""
+        )
+    );
     setLastName(state.values.lastName ?? "");
     setFirstName(state.values.firstName ?? "");
     setFurigana(state.values.furigana ?? "");
@@ -154,6 +167,13 @@ export function CandidateForm({ candidate, mode, onSaved }: CandidateFormProps) 
     const computed = calculateAgeFromBirthDate(birthDate);
     if (computed != null) setAge(String(computed));
   }, [birthDate]);
+
+  function handleFullNameChange(value: string) {
+    setFullName(value);
+    const split = splitCandidateFullName(value);
+    setLastName(split.lastName);
+    setFirstName(split.firstName);
+  }
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -211,21 +231,17 @@ export function CandidateForm({ candidate, mode, onSaved }: CandidateFormProps) 
 
       <FormSection title="基本情報">
         <div className="grid gap-4 sm:grid-cols-2">
+          <input type="hidden" name="lastName" value={lastName} />
+          <input type="hidden" name="firstName" value={firstName} />
           <Field
-            label="姓 *"
-            name="lastName"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            label="氏名 *"
+            name="fullName"
+            value={fullName}
+            onChange={(e) => handleFullNameChange(e.target.value)}
             required
-            error={fieldErrors.lastName?.[0]}
-          />
-          <Field
-            label="名 *"
-            name="firstName"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            required
-            error={fieldErrors.firstName?.[0]}
+            className="sm:col-span-2"
+            placeholder="例: 山田 太郎"
+            error={fieldErrors.lastName?.[0] ?? fieldErrors.firstName?.[0]}
           />
           <Field
             label="フリガナ（カタカナ）"
@@ -332,8 +348,8 @@ export function CandidateForm({ candidate, mode, onSaved }: CandidateFormProps) 
           <Field
             label="稼働可能日"
             name="availableDate"
-            type="date"
-            defaultValue={val("availableDate", toDateInputValue(candidate?.availableDate))}
+            defaultValue={val("availableDate", candidate?.availableDate ?? "")}
+            placeholder="例: 来週から可、7/15〜"
             error={fieldErrors.availableDate?.[0]}
           />
           <SelectField
@@ -636,8 +652,9 @@ function yesNoToSelect(value?: boolean | null): string {
 }
 
 const FIELD_LABELS: Record<string, string> = {
-  lastName: "姓",
-  firstName: "名",
+  fullName: "氏名",
+  lastName: "氏名",
+  firstName: "氏名",
   furigana: "フリガナ",
   phone: "電話番号",
   email: "メールアドレス",

@@ -87,7 +87,7 @@ export const candidateSchema = z
       }),
 
     employmentStatus: optionalNativeEnum(EmploymentStatus),
-    availableDate: optionalDateString,
+    availableDate: z.string().optional(),
     latestEmploymentType: optionalNativeEnum(EmploymentType),
     dispatchCompany: z.string().optional(),
     resignationReason: z.string().optional(),
@@ -286,7 +286,7 @@ export function toCandidateDbInput(data: CandidateFormValues) {
     status: data.status,
     source: data.source,
     employmentStatus: data.employmentStatus ?? null,
-    availableDate: parseDate(data.availableDate),
+    availableDate: data.availableDate?.trim() || null,
     latestEmploymentType: data.latestEmploymentType ?? null,
     dispatchCompany: data.dispatchCompany || null,
     resignationReason: data.resignationReason || null,

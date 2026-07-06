@@ -780,7 +780,7 @@ model Resume {
   workHistoryJson Json @default("[]") @map("work_history_json") @db.JsonB
   licensesJson    Json @default("[]") @map("licenses_json") @db.JsonB
 
-  selfPr     String? @db.Text
+  selfPr     String? @map("self_pr") @db.Text
   motivation String? @db.Text
   photoUrl   String? @map("photo_url")
 

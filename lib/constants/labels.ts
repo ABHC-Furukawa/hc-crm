@@ -29,6 +29,9 @@ export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
   TAG_ASSIGNED: "タグ付与",
   TAG_REMOVED: "タグ削除",
   APPLICATION_SUBMITTED: "選考登録",
+  RESUME_CREATED: "履歴書作成",
+  RESUME_UPDATED: "履歴書更新",
+  RESUME_EXPORTED: "履歴書出力",
 };
 
 export const ACTIVITY_ENTITY_LABELS: Record<ActivityEntityType, string> = {
@@ -47,6 +50,7 @@ export const ACTIVITY_ENTITY_LABELS: Record<ActivityEntityType, string> = {
   APPLICATION: "選考",
   CANDIDATE_ASSIGNMENT: "担当",
   USER: "ユーザー",
+  RESUME: "履歴書",
 };
 
 export const COMMUNICATION_CHANNEL_LABELS: Record<CommunicationChannel, string> = {
@@ -145,6 +149,7 @@ export const TASK_PRIORITY_LABELS: Record<TaskPriority, string> = {
 export const DETAIL_TABS = [
   { id: "profile", label: "プロフィール" },
   { id: "job", label: "案件" },
+  { id: "resume", label: "履歴書" },
   { id: "activity", label: "アクティビティ" },
   { id: "tasks", label: "タスク" },
   { id: "notes", label: "メモ" },

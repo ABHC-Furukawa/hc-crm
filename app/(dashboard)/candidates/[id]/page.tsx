@@ -16,7 +16,9 @@ import { TaskListPanel } from "@/components/candidates/detail/task-list-panel";
 import { NoteListPanel } from "@/components/candidates/detail/note-list-panel";
 import { CommunicationHistoryPanel } from "@/components/candidates/detail/communication-history-panel";
 import { JobCasePanel } from "@/components/candidates/detail/job-case-panel";
+import { ResumeSummaryPanel } from "@/components/resumes/resume-summary-panel";
 import { CandidateDuplicateNoticeBanner } from "@/components/candidates/detail/candidate-duplicate-notice-banner";
+import { getResumeSummaryForCandidate } from "@/lib/actions/resumes";
 import { Button } from "@/components/ui/button";
 import { isDetailTab, type DetailTabId } from "@/lib/constants/labels";
 import { fullName } from "@/lib/utils";
@@ -73,6 +75,11 @@ export default async function CandidateDetailPage({
   const assignableUsers =
     activeTab === "tasks" ? await getActiveUsersForAssignment(tenantId) : [];
 
+  const resumeSummary =
+    activeTab === "resume"
+      ? await getResumeSummaryForCandidate(id)
+      : null;
+
   return (
     <>
       <DashboardHeader title={fullName(candidate.lastName, candidate.firstName)} />
@@ -96,6 +103,14 @@ export default async function CandidateDetailPage({
 
             {activeTab === "profile" && <CandidateProfilePanel candidate={candidate} />}
             {activeTab === "job" && <JobCasePanel candidate={candidate} />}
+            {activeTab === "resume" && (
+              <ResumeSummaryPanel
+                candidateId={id}
+                candidateName={fullName(candidate.lastName, candidate.firstName)}
+                resume={resumeSummary}
+                compact
+              />
+            )}
             {activeTab === "activity" && activity && (
               <ActivityTimelinePanel
                 candidateId={id}

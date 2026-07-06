@@ -244,6 +244,9 @@ enum ActivityAction {
   TAG_ASSIGNED
   TAG_REMOVED
   APPLICATION_SUBMITTED
+  RESUME_CREATED
+  RESUME_UPDATED
+  RESUME_EXPORTED
 }
 
 enum ActivityEntityType {
@@ -262,6 +265,7 @@ enum ActivityEntityType {
   APPLICATION
   CANDIDATE_ASSIGNMENT
   USER
+  RESUME
 }
 
 enum FileCategory {
@@ -272,6 +276,26 @@ enum FileCategory {
   RECORDING
   TRANSCRIPT
   OTHER
+}
+
+enum ResumeDocumentType {
+  RIREKISHO
+  SHOKUMUKEIREKISHO
+}
+
+enum ResumeTemplateType {
+  JIS_STANDARD_A4
+}
+
+enum ResumeStatus {
+  DRAFT
+  READY
+}
+
+enum ResumeGender {
+  MALE
+  FEMALE
+  UNSPECIFIED
 }
 
 enum ApplicationStatus {
@@ -463,6 +487,9 @@ model User {
   kpiGoals               KpiGoal[]             @relation("KpiGoalUser")
   activityMetricsDaily   ActivityMetricDaily[] @relation("ActivityMetricUser")
   tenantAuditLogs        TenantAuditLog[]      @relation("TenantAuditActor")
+  createdResumes         Resume[]              @relation("ResumeCreator")
+  updatedResumes         Resume[]              @relation("ResumeUpdater")
+  resumeExports          ResumeExportLog[]     @relation("ResumeExporter")
 
   @@index([tenantId])
   @@index([managerId])
@@ -553,6 +580,7 @@ model Candidate {
   tags             CandidateTag[]
   jobCases         CandidateJobCase[]
   convertedFromCallLeads CallLead[] @relation("CallLeadConversion")
+  resumes          Resume[]
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -723,6 +751,69 @@ model Note {
   @@index([candidateId, isPinned])
   @@index([deletedAt])
   @@map("notes")
+}
+
+// ─────────────────────────────────────────────
+// Resume — 履歴書・職務経歴書（Candidate スナップショット）
+// ─────────────────────────────────────────────
+
+model Resume {
+  id           String             @id @default(uuid()) @db.Uuid
+  tenantId     String             @map("tenant_id") @db.Uuid
+  candidateId  String?            @map("candidate_id") @db.Uuid
+  createdById  String?            @map("created_by_id") @db.Uuid
+  updatedById  String?            @map("updated_by_id") @db.Uuid
+  documentType ResumeDocumentType @default(RIREKISHO) @map("document_type")
+  templateType ResumeTemplateType @default(JIS_STANDARD_A4) @map("template_type")
+  status       ResumeStatus       @default(DRAFT)
+
+  fullName    String        @map("full_name")
+  furigana    String?
+  birthDate   DateTime?     @map("birth_date") @db.Date
+  gender      ResumeGender?
+  postalCode  String?       @map("postal_code")
+  address     String?       @db.Text
+  phone       String?
+  email       String?
+
+  educationJson   Json @default("[]") @map("education_json") @db.JsonB
+  workHistoryJson Json @default("[]") @map("work_history_json") @db.JsonB
+  licensesJson    Json @default("[]") @map("licenses_json") @db.JsonB
+
+  selfPr     String? @db.Text
+  motivation String? @db.Text
+  photoUrl   String? @map("photo_url")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  tenant     Tenant            @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  candidate  Candidate?        @relation(fields: [candidateId], references: [id], onDelete: SetNull)
+  createdBy  User?             @relation("ResumeCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy  User?             @relation("ResumeUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  exportLogs ResumeExportLog[]
+
+  @@unique([candidateId, documentType])
+  @@index([tenantId, updatedAt(sort: Desc)])
+  @@index([candidateId])
+  @@index([deletedAt])
+  @@map("resumes")
+}
+
+model ResumeExportLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  resumeId     String   @map("resume_id") @db.Uuid
+  exportedById String   @map("exported_by_id") @db.Uuid
+  exportedAt   DateTime @default(now()) @map("exported_at")
+  fileUrl      String?  @map("file_url")
+  fileName     String?  @map("file_name")
+
+  resume     Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  exportedBy User   @relation("ResumeExporter", fields: [exportedById], references: [id], onDelete: Restrict)
+
+  @@index([resumeId, exportedAt(sort: Desc)])
+  @@map("resume_export_logs")
 }
 
 // ─────────────────────────────────────────────
@@ -1046,6 +1137,7 @@ model Tenant {
   jobs                 Job[]
   rawJobs              RawJob[]
   jobImportLogs        JobImportLog[]
+  resumes              Resume[]
 
   @@map("tenants")
 }

@@ -9,6 +9,7 @@ import { CANDIDATE_DISPLAY } from "@/lib/constants/candidate-display";
 export type AppRouteId =
   | "dashboard"
   | "candidates"
+  | "resumes"
   | "call-leads"
   | "jobs"
   | "communications"
@@ -40,6 +41,12 @@ export const APP_ROUTE_DEFINITIONS: AppRouteDefinition[] = [
     label: CANDIDATE_DISPLAY.listTitle,
     matchPrefix: "/candidates",
     exclude: "/candidates/new",
+  },
+  {
+    id: "resumes",
+    href: "/resumes",
+    label: "履歴書作成",
+    matchPrefix: "/resumes",
   },
   {
     id: "call-leads",

@@ -15,6 +15,7 @@ import {
   GitBranch,
   Settings,
   Radio,
+  FileText,
   type LucideIcon,
 } from "lucide-react";
 import type { AppRouteDefinition, AppRouteId } from "@/lib/auth/navigation";
@@ -25,6 +26,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 const ROUTE_ICONS: Record<AppRouteId, LucideIcon> = {
   dashboard: LayoutDashboard,
   candidates: Users,
+  resumes: FileText,
   "call-leads": PhoneCall,
   jobs: Briefcase,
   communications: MessageSquare,

@@ -32,6 +32,16 @@ function mapRowToImportRow(
   const name = mapped.name?.trim();
   if (!name) return null;
 
+  const ageRaw = mapped.age?.trim();
+  const ageParsed =
+    ageRaw && Number.isFinite(Number(ageRaw)) ? Number(ageRaw) : null;
+
+  let appliedAt: Date | null = null;
+  if (mapped.appliedAt) {
+    const parsed = new Date(mapped.appliedAt);
+    appliedAt = Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
   return {
     rawData,
     row: {
@@ -39,11 +49,11 @@ function mapRowToImportRow(
       sourceSheet: sheetName,
       sourceRowNumber: rowNumber,
       rawData,
-      appliedAt: mapped.appliedAt ? new Date(mapped.appliedAt) : null,
+      appliedAt,
       name,
       email: mapped.email || null,
       phone: mapped.phone || null,
-      age: mapped.age ? Number(mapped.age) : null,
+      age: ageParsed,
       applicationArea: mapped.applicationArea || null,
     },
   };

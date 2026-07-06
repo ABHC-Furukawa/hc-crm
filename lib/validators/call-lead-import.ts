@@ -4,10 +4,12 @@ import type { CallLeadImportRow } from "@/lib/import/types";
 
 const emptyToUndefined = (v: unknown) => (v === "" || v === null ? undefined : v);
 
-const optionalAge = z.preprocess(
-  emptyToUndefined,
-  z.coerce.number().int().min(0).max(150).optional()
-);
+const optionalAge = z.preprocess((v) => {
+  if (v === "" || v === null || v === undefined) return undefined;
+  const n = Number(v);
+  if (!Number.isFinite(n)) return undefined;
+  return Math.trunc(n);
+}, z.number().int().min(0).max(150).optional());
 
 const optionalString = z.preprocess(
   emptyToUndefined,
@@ -16,11 +18,13 @@ const optionalString = z.preprocess(
 
 function parseAppliedAt(value: unknown): Date | null | undefined {
   if (value === "" || value === null || value === undefined) return null;
-  if (value instanceof Date) return value;
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
   const str = String(value).trim();
   if (!str) return null;
   const parsed = new Date(str);
-  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
 export const callLeadImportRowSchema = z.object({

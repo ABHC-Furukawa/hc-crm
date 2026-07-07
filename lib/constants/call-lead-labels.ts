@@ -12,25 +12,32 @@ import { CANDIDATE_DISPLAY } from "@/lib/constants/candidate-display";
 export const CALL_LEAD_STATUS_LABELS: Record<CallLeadStatus, string> = {
   BLANK: "未架電",
   HEARING: "ヒアリング中",
-  NO_ANSWER: "不通",
+  NO_ANSWER: "不出",
+  NO_ANSWER_OVER_50: "不出（50代以上）",
+  FUTURE_HIRE: "先々入社",
+  REFERRAL_NOT_AVAILABLE: "紹介不可",
   DUPLICATE: "重複",
   OUT_OF_SCOPE: "対象外",
-  CONVERTED: CANDIDATE_DISPLAY.convertDone,
+  CONVERTED: CANDIDATE_DISPLAY.convertDoneLong,
 };
 
 export const CALL_LEAD_STATUS_STYLES: Record<CallLeadStatus, string> = {
   BLANK: "bg-slate-100 text-slate-800 border-slate-200",
   HEARING: "bg-blue-100 text-blue-800 border-blue-200",
   NO_ANSWER: "bg-amber-100 text-amber-800 border-amber-200",
+  NO_ANSWER_OVER_50: "bg-orange-100 text-orange-800 border-orange-200",
+  FUTURE_HIRE: "bg-violet-100 text-violet-800 border-violet-200",
+  REFERRAL_NOT_AVAILABLE: "bg-gray-100 text-gray-500 border-gray-200",
   DUPLICATE: "bg-gray-100 text-gray-500 border-gray-200",
   OUT_OF_SCOPE: "bg-gray-100 text-gray-500 border-gray-200",
   CONVERTED: "bg-emerald-100 text-emerald-800 border-emerald-200",
 };
 
-/** DUPLICATE / OUT_OF_SCOPE / CONVERTED は一覧でグレーアウト */
+/** DUPLICATE / OUT_OF_SCOPE / REFERRAL_NOT_AVAILABLE / CONVERTED は一覧でグレーアウト */
 export const CALL_LEAD_GRAYED_OUT_STATUSES: CallLeadStatus[] = [
   CallLeadStatus.DUPLICATE,
   CallLeadStatus.OUT_OF_SCOPE,
+  CallLeadStatus.REFERRAL_NOT_AVAILABLE,
   CallLeadStatus.CONVERTED,
 ];
 

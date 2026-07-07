@@ -24,6 +24,7 @@ type DateRange = {
 const EXCLUDED_CALL_LEAD_STATUSES: CallLeadStatus[] = [
   CallLeadStatus.DUPLICATE,
   CallLeadStatus.OUT_OF_SCOPE,
+  CallLeadStatus.REFERRAL_NOT_AVAILABLE,
 ];
 
 function scopedUserFilter(scope: MetricScope): Prisma.UserWhereInput {

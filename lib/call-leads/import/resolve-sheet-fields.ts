@@ -10,15 +10,23 @@ export type AssigneeLookupUser = {
 
 /** スプレッドシート「対応履歴」→ CallLeadStatus */
 const SHEET_STATUS_MAP: Record<string, CallLeadStatus> = {
+  空白: CallLeadStatus.BLANK,
+  未架電: CallLeadStatus.BLANK,
   重複: CallLeadStatus.DUPLICATE,
   対象外: CallLeadStatus.OUT_OF_SCOPE,
   不出: CallLeadStatus.NO_ANSWER,
   不通: CallLeadStatus.NO_ANSWER,
+  "不出（50代以上）": CallLeadStatus.NO_ANSWER_OVER_50,
+  先々入社: CallLeadStatus.FUTURE_HIRE,
+  紹介不可: CallLeadStatus.REFERRAL_NOT_AVAILABLE,
   送客: CallLeadStatus.CONVERTED,
   ヒアリング: CallLeadStatus.HEARING,
   ヒアリング中: CallLeadStatus.HEARING,
-  提案失注: CallLeadStatus.HEARING,
-  紹介不可: CallLeadStatus.OUT_OF_SCOPE,
+  "アポ（ヒアリング）": CallLeadStatus.HEARING,
+  対応: CallLeadStatus.HEARING,
+  "アポ（提案）": CallLeadStatus.CONVERTED,
+  検討中: CallLeadStatus.CONVERTED,
+  提案失注: CallLeadStatus.CONVERTED,
 };
 
 /** シート上の苗字 → CRM ユーザー（furukawa 等） */
@@ -81,6 +89,9 @@ const PRESERVE_STATUS_ON_UPDATE = new Set<CallLeadStatus>([
   CallLeadStatus.CONVERTED,
   CallLeadStatus.HEARING,
   CallLeadStatus.NO_ANSWER,
+  CallLeadStatus.NO_ANSWER_OVER_50,
+  CallLeadStatus.FUTURE_HIRE,
+  CallLeadStatus.REFERRAL_NOT_AVAILABLE,
 ]);
 
 export function resolveStatusFromSheet(

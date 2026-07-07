@@ -2,6 +2,7 @@
  * 既存 CallLead にスプレッドシート rawData の担当・対応履歴を反映
  *
  *   npx tsx scripts/backfill-call-lead-sheet-fields.ts
+ *   npx tsx scripts/backfill-call-lead-sheet-fields.ts --force-status
  */
 import { loadEnv } from "./load-env";
 import { prisma } from "../lib/prisma";
@@ -15,6 +16,8 @@ import {
 } from "../lib/call-leads/import/resolve-sheet-fields";
 
 loadEnv();
+
+const forceStatus = process.argv.includes("--force-status");
 
 async function main() {
   const tenantId =
@@ -53,7 +56,10 @@ async function main() {
       users
     );
     const sheetStatus = parseSheetStatusLabel(extractSheetStatusLabel(rawData));
-    const nextStatus = resolveStatusFromSheet(lead.status, sheetStatus);
+    const nextStatus =
+      forceStatus && sheetStatus
+        ? sheetStatus
+        : resolveStatusFromSheet(lead.status, sheetStatus);
 
     const data: { assignedUserId?: string; status?: typeof lead.status } = {};
     if (sheetAssigneeId && sheetAssigneeId !== lead.assignedUserId) {
@@ -74,6 +80,7 @@ async function main() {
   }
 
   console.log(`tenantId: ${tenantId}`);
+  console.log(`force status: ${forceStatus}`);
   console.log(`leads scanned: ${leads.length}`);
   console.log(`assignee updated: ${assigneeUpdated}`);
   console.log(`status updated: ${statusUpdated}`);

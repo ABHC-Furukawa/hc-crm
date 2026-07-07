@@ -13,6 +13,9 @@ const EDITABLE_STATUSES: CallLeadStatus[] = [
   "BLANK",
   "HEARING",
   "NO_ANSWER",
+  "NO_ANSWER_OVER_50",
+  "FUTURE_HIRE",
+  "REFERRAL_NOT_AVAILABLE",
   "DUPLICATE",
   "OUT_OF_SCOPE",
 ];

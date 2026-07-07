@@ -23,6 +23,7 @@ import { prisma } from "@/lib/prisma";
 const NON_DIALABLE_STATUSES: CallLeadStatus[] = [
   CallLeadStatus.DUPLICATE,
   CallLeadStatus.OUT_OF_SCOPE,
+  CallLeadStatus.REFERRAL_NOT_AVAILABLE,
   CallLeadStatus.CONVERTED,
 ];
 

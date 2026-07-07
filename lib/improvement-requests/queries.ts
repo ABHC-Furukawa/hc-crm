@@ -2,7 +2,10 @@ import { prisma } from "@/lib/prisma";
 
 export async function listImprovementRequestsForDeveloper() {
   return prisma.improvementRequest.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: [
+      { doneAt: { sort: "asc", nulls: "first" } },
+      { createdAt: "desc" },
+    ],
     include: {
       submittedBy: {
         select: {

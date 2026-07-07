@@ -1160,6 +1160,7 @@ model ImprovementRequest {
   name          String
   priority      ImprovementRequestPriority
   description   String                     @db.Text
+  doneAt        DateTime?                  @map("done_at")
   createdAt     DateTime                   @default(now()) @map("created_at")
 
   tenant      Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -1167,6 +1168,7 @@ model ImprovementRequest {
 
   @@index([tenantId, createdAt(sort: Desc)])
   @@index([submittedById])
+  @@index([doneAt])
   @@map("improvement_requests")
 }
 

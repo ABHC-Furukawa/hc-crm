@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { canViewImprovementRequests } from "@/lib/auth/rbac";
 import { IMPROVEMENT_REQUEST_PRIORITY_LABELS } from "@/lib/constants/improvement-request";
 import { notifyImprovementRequestToSlack } from "@/lib/notifications/slack";
 import { prisma } from "@/lib/prisma";
@@ -63,4 +64,36 @@ export async function submitImprovementRequestAction(
   revalidatePath("/settings/feedback");
 
   return { success: true };
+}
+
+export async function markImprovementRequestDoneAction(
+  requestId: string
+): Promise<{ error?: string }> {
+  const { user } = await requireTenantContext();
+
+  if (!canViewImprovementRequests(user.role)) {
+    return { error: "アクセス権限がありません" };
+  }
+
+  const existing = await prisma.improvementRequest.findUnique({
+    where: { id: requestId },
+    select: { id: true, doneAt: true },
+  });
+
+  if (!existing) {
+    return { error: "投稿が見つかりません" };
+  }
+
+  if (existing.doneAt) {
+    return {};
+  }
+
+  await prisma.improvementRequest.update({
+    where: { id: requestId },
+    data: { doneAt: new Date() },
+  });
+
+  revalidatePath("/settings/feedback");
+
+  return {};
 }

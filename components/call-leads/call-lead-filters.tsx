@@ -97,21 +97,25 @@ export function CallLeadFilters({
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="status">ステータス</Label>
-                <select
-                  id="status"
-                  name="status"
-                  defaultValue={filters.status ?? ""}
-                  className={selectClass}
-                >
-                  <option value="">すべて</option>
+              <div className="space-y-2 sm:col-span-2 lg:col-span-4">
+                <Label>ステータス</Label>
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {FILTER_STATUSES.map((status) => (
-                    <option key={status} value={status}>
+                    <label
+                      key={status}
+                      className="flex items-center gap-2 text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        name="status"
+                        value={status}
+                        defaultChecked={filters.statuses?.includes(status)}
+                        className="h-4 w-4 rounded border-input"
+                      />
                       {CALL_LEAD_STATUS_LABELS[status]}
-                    </option>
+                    </label>
                   ))}
-                </select>
+                </div>
               </div>
 
               <div className="space-y-2">

@@ -9,7 +9,9 @@ export function buildCallLeadListHref(
   const params = new URLSearchParams();
 
   if (filters.q) params.set("q", filters.q);
-  if (filters.status) params.set("status", filters.status);
+  for (const status of filters.statuses ?? []) {
+    params.append("status", status);
+  }
   if (filters.sourceType) params.set("sourceType", filters.sourceType);
   if (filters.assignedUserId) params.set("assignedUserId", filters.assignedUserId);
   if (filters.ageMin != null) params.set("ageMin", String(filters.ageMin));

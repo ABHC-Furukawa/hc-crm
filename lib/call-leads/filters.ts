@@ -11,7 +11,7 @@ import {
 
 export type CallLeadFilters = {
   q?: string;
-  status?: CallLeadStatus;
+  statuses?: CallLeadStatus[];
   assignedUserId?: string;
   sourceType?: ImportSourceType;
   ageMin?: number;
@@ -63,15 +63,22 @@ export function parseCallLeadFilters(
     return typeof value === "string" && value.length > 0 ? value : undefined;
   };
 
-  const status = get("status");
   const sourceType = get("sourceType");
   const region = get("region");
   const prefecture = get("prefecture");
+  const statusParam = params.status;
+  const statusValues = (
+    Array.isArray(statusParam)
+      ? statusParam
+      : typeof statusParam === "string"
+        ? [statusParam]
+        : []
+  ).filter((value) => VALID_STATUSES.has(value));
+  const statuses = [...new Set(statusValues)] as CallLeadStatus[];
 
   return {
     q: get("q"),
-    status:
-      status && VALID_STATUSES.has(status) ? (status as CallLeadStatus) : undefined,
+    statuses: statuses.length > 0 ? statuses : undefined,
     sourceType:
       sourceType && VALID_SOURCE_TYPES.has(sourceType)
         ? (sourceType as ImportSourceType)
@@ -93,7 +100,7 @@ export function parseCallLeadFilters(
 export function hasActiveCallLeadFilters(filters: CallLeadFilters): boolean {
   return Boolean(
     filters.q ||
-      filters.status ||
+      (filters.statuses?.length ?? 0) > 0 ||
       filters.sourceType ||
       filters.assignedUserId ||
       filters.ageMin != null ||

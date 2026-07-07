@@ -140,7 +140,9 @@ export function buildCallLeadListWhere(
 
   return {
     ...base,
-    ...(filters.status ? { status: filters.status } : {}),
+    ...(filters.statuses?.length
+      ? { status: { in: filters.statuses } }
+      : {}),
     ...(filters.sourceType ? { sourceType: filters.sourceType } : {}),
     ...(filters.assignedUserId ? { assignedUserId: filters.assignedUserId } : {}),
     ...(search ?? {}),

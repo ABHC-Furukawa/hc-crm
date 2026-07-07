@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/table";
 import {
   KPI_DAILY_TABLE_METRICS,
+  KPI_METRIC_UNITS,
   getMetricLabel,
   formatMetricValue,
 } from "@/lib/kpi/constants";
@@ -63,7 +64,8 @@ export function KpiDailyTable({
                 <TableCell>{formatDate(row.date)}</TableCell>
                 {highlightMetrics.map((metric) => (
                   <TableCell key={metric} className="text-right tabular-nums">
-                    {formatMetricValue(metric, row.values[metric] ?? 0)}名
+                    {formatMetricValue(metric, row.values[metric] ?? 0)}
+                    {KPI_METRIC_UNITS[metric]}
                   </TableCell>
                 ))}
               </TableRow>

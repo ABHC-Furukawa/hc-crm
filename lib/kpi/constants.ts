@@ -102,8 +102,9 @@ export const KPI_DASHBOARD_METRICS = [
   ...KPI_DASHBOARD_AMOUNT_METRICS,
 ] as const;
 
-/** 日次行動量テーブル — 当日のステータス遷移件数 */
+/** 日次行動量テーブル — 架電数 + 当日のステータス遷移件数 */
 export const KPI_DAILY_TABLE_METRICS = [
+  KpiMetricType.CALL_COUNT,
   KpiMetricType.ENTRY_COUNT,
   KpiMetricType.INTERVIEW_SET_COUNT,
   KpiMetricType.JOINED_COUNT,
@@ -114,6 +115,7 @@ export const KPI_DAILY_METRIC_LABELS: Record<
   (typeof KPI_DAILY_TABLE_METRICS)[number],
   string
 > = {
+  CALL_COUNT: "架電数",
   ENTRY_COUNT: "エントリー（遷移）",
   INTERVIEW_SET_COUNT: "面談設定（遷移）",
   JOINED_COUNT: "入社（遷移）",
@@ -124,7 +126,7 @@ export const KPI_SNAPSHOT_AGGREGATION_HINT =
 
 /** 進行中パイプライン・金額面 — 月次は通過月ベース */
 export const KPI_PIPELINE_PERIOD_AGGREGATION_HINT =
-  "選択月内に各フェーズを通過した件数・金額（紹介料は通過月に計上）";
+  "選択月内に各フェーズを前進通過した候補者数・金額（同一候補者は1件、巻き戻し操作は除外）";
 
 /** 月次遷移指標の集計説明 */
 export const KPI_TRANSITION_AGGREGATION_HINT =
@@ -202,6 +204,31 @@ export const KPI_METRIC_UNITS: Record<KpiMetricType, string> = {
   INTERVIEW_SET_AMOUNT: "万円",
   JOINED_AMOUNT: "万円",
 };
+
+export function getPipelineOrder(status: CandidateStatus): number {
+  const index = CANDIDATE_PIPELINE_ORDER.indexOf(
+    status as (typeof CANDIDATE_PIPELINE_ORDER)[number]
+  );
+  return index >= 0 ? index : -1;
+}
+
+/** パイプライン上でステータスが前進した遷移か（巻き戻し・同順位は除外） */
+export function isForwardPipelineTransition(
+  from: CandidateStatus | undefined,
+  to: CandidateStatus | undefined
+): boolean {
+  if (!to) return false;
+
+  const toOrder = getPipelineOrder(to);
+  if (toOrder < 0) return false;
+
+  if (!from) return true;
+
+  const fromOrder = getPipelineOrder(from);
+  if (fromOrder < 0) return true;
+
+  return toOrder > fromOrder;
+}
 
 export function isSnapshotMetric(metricType: KpiMetricType): boolean {
   return (KPI_SNAPSHOT_METRICS as readonly KpiMetricType[]).includes(metricType);

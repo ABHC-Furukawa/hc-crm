@@ -8,6 +8,7 @@ import {
   ENTRY_OR_BEYOND_STATUSES,
   INTERVIEW_SET_PIPELINE_STATUSES,
   isAmountMetric,
+  isForwardPipelineTransition,
   isSnapshotMetric,
   usesTransitionPeriodAggregation,
 } from "@/lib/kpi/constants";
@@ -233,19 +234,63 @@ async function countStatusTransitionsToAny(
   });
 }
 
-async function sumReferralFeeForStatusTransitions(
+async function countUniqueForwardStatusTransitions(
   scope: MetricScope,
   range: DateRange,
   toStatuses: CandidateStatus | readonly CandidateStatus[]
 ): Promise<number> {
   const statuses = Array.isArray(toStatuses) ? toStatuses : [toStatuses];
+  const statusSet = new Set(statuses);
 
   const activities = await prisma.activity.findMany({
     where: statusTransitionWhere(scope, range, statuses),
-    select: { candidateId: true },
+    select: { candidateId: true, metadata: true },
   });
 
-  const candidateIds = [...new Set(activities.map((a) => a.candidateId))];
+  const uniqueCandidates = new Set<string>();
+  for (const activity of activities) {
+    const meta = activity.metadata as StatusActivityMetadata | null;
+    const to = meta?.to;
+    const from = meta?.from;
+    if (!to || !statusSet.has(to)) continue;
+    if (!isForwardPipelineTransition(from, to)) continue;
+    uniqueCandidates.add(activity.candidateId);
+  }
+
+  if (uniqueCandidates.size === 0) return 0;
+
+  return prisma.candidate.count({
+    where: {
+      id: { in: [...uniqueCandidates] },
+      ...scopedCandidateWhere(scope),
+    },
+  });
+}
+
+async function sumReferralFeeForStatusTransitions(
+  scope: MetricScope,
+  range: DateRange,
+  toStatuses: CandidateStatus | readonly CandidateStatus[],
+  options?: { forwardOnly?: boolean }
+): Promise<number> {
+  const statuses = Array.isArray(toStatuses) ? toStatuses : [toStatuses];
+
+  const activities = await prisma.activity.findMany({
+    where: statusTransitionWhere(scope, range, statuses),
+    select: { candidateId: true, metadata: true },
+  });
+
+  const candidateIds = [
+    ...new Set(
+      activities
+        .filter((activity) => {
+          if (!options?.forwardOnly) return true;
+          const meta = activity.metadata as StatusActivityMetadata | null;
+          return isForwardPipelineTransition(meta?.from, meta?.to);
+        })
+        .map((activity) => activity.candidateId)
+    ),
+  ];
   if (candidateIds.length === 0) return 0;
 
   return sumReferralFeeForCandidateIds(scope, candidateIds);
@@ -329,8 +374,12 @@ async function computeSnapshotMetricValue(
 async function computeTransitionMetricValue(
   scope: MetricScope,
   metricType: KpiMetricType,
-  range: DateRange
+  range: DateRange,
+  options?: ComputeOptions
 ): Promise<number> {
+  const usePipelinePassThrough =
+    !options?.daily && usesTransitionPeriodAggregation(metricType);
+
   switch (metricType) {
     case KpiMetricType.CALL_COUNT:
       return countCallAttempts(scope, range);
@@ -339,7 +388,9 @@ async function computeTransitionMetricValue(
     case KpiMetricType.PROPOSAL_COUNT:
       return countStatusTransitions(scope, range, CandidateStatus.JOB_PROPOSAL);
     case KpiMetricType.ENTRY_COUNT:
-      return countStatusTransitions(scope, range, CandidateStatus.ENTRY);
+      return usePipelinePassThrough
+        ? countUniqueForwardStatusTransitions(scope, range, CandidateStatus.ENTRY)
+        : countStatusTransitions(scope, range, CandidateStatus.ENTRY);
     case KpiMetricType.INTERVIEW_PREP_COUNT:
       return countStatusTransitions(
         scope,
@@ -347,11 +398,17 @@ async function computeTransitionMetricValue(
         CandidateStatus.INTERVIEW_PREP
       );
     case KpiMetricType.INTERVIEW_SET_COUNT:
-      return countStatusTransitionsToAny(
-        scope,
-        range,
-        INTERVIEW_SET_PIPELINE_STATUSES
-      );
+      return usePipelinePassThrough
+        ? countUniqueForwardStatusTransitions(
+            scope,
+            range,
+            INTERVIEW_SET_PIPELINE_STATUSES
+          )
+        : countStatusTransitionsToAny(
+            scope,
+            range,
+            INTERVIEW_SET_PIPELINE_STATUSES
+          );
     case KpiMetricType.OFFER_COUNT:
       return countOffers(scope, range);
     case KpiMetricType.OFFER_ACCEPTED_COUNT:
@@ -361,24 +418,29 @@ async function computeTransitionMetricValue(
         CandidateStatus.OFFER_ACCEPTED
       );
     case KpiMetricType.JOINED_COUNT:
-      return countStatusTransitions(scope, range, CandidateStatus.JOINED);
+      return usePipelinePassThrough
+        ? countUniqueForwardStatusTransitions(scope, range, CandidateStatus.JOINED)
+        : countStatusTransitions(scope, range, CandidateStatus.JOINED);
     case KpiMetricType.ENTRY_AMOUNT:
       return sumReferralFeeForStatusTransitions(
         scope,
         range,
-        CandidateStatus.ENTRY
+        CandidateStatus.ENTRY,
+        { forwardOnly: usePipelinePassThrough }
       );
     case KpiMetricType.INTERVIEW_SET_AMOUNT:
       return sumReferralFeeForStatusTransitions(
         scope,
         range,
-        INTERVIEW_SET_PIPELINE_STATUSES
+        INTERVIEW_SET_PIPELINE_STATUSES,
+        { forwardOnly: usePipelinePassThrough }
       );
     case KpiMetricType.JOINED_AMOUNT:
       return sumReferralFeeForStatusTransitions(
         scope,
         range,
-        CandidateStatus.JOINED
+        CandidateStatus.JOINED,
+        { forwardOnly: usePipelinePassThrough }
       );
     default:
       return 0;
@@ -405,7 +467,7 @@ export async function computeMetricValue(
       ));
     return computeSnapshotMetricValue(scope, metricType, statusMap);
   }
-  return computeTransitionMetricValue(scope, metricType, range);
+  return computeTransitionMetricValue(scope, metricType, range, options);
 }
 
 export async function computePeriodMetrics(

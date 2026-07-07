@@ -109,7 +109,7 @@ export default async function KpiPage({ searchParams }: PageProps) {
           <CardHeader>
             <CardTitle>日次行動量</CardTitle>
             <CardDescription>
-              選択月の日別ステータス遷移件数
+              選択月の日別架電数・ステータス遷移件数
             </CardDescription>
           </CardHeader>
           <CardContent>

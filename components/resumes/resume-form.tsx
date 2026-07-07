@@ -21,9 +21,11 @@ import {
   ResumeLicenseFields,
   ResumeWorkHistoryFields,
 } from "@/components/resumes/resume-dynamic-fields";
+import { ResumeEducationInferTool } from "@/components/resumes/resume-education-infer-tool";
 import { ResumePhotoUpload } from "@/components/resumes/resume-photo-upload";
 import { ResumeSyncButton } from "@/components/resumes/resume-summary-panel";
 import { ResumeCandidateLink } from "@/components/resumes/resume-nav-links";
+import { ResumeSectionNav } from "@/components/resumes/resume-section-nav";
 import { ResumePdfActions } from "@/components/resumes/resume-pdf-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +61,20 @@ export function ResumeForm({
   const [education, setEducation] = useState(jsonFields.educationJson);
   const [workHistory, setWorkHistory] = useState(jsonFields.workHistoryJson);
   const [licenses, setLicenses] = useState(jsonFields.licensesJson);
+  const [birthDate, setBirthDate] = useState(toDateInputValue(resume.birthDate));
+
+  function applyInferredEducation(entries: typeof education) {
+    const hasExisting = education.some(
+      (row) => row.school.trim() || row.year || row.month
+    );
+    if (hasExisting) {
+      const ok = window.confirm(
+        "既存の学歴を上書きして、生年月日から自動入力しますか？"
+      );
+      if (!ok) return;
+    }
+    setEducation(entries);
+  }
 
   useEffect(() => {
     if (wasPending.current && !pending && state.success) {
@@ -111,52 +127,63 @@ export function ResumeForm({
         </div>
       </div>
 
-      <Card>
+      <ResumeSectionNav className="sticky top-14 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80" />
+
+      <Card id="resume-basic" className="scroll-mt-28">
         <CardHeader>
           <CardTitle>基本情報</CardTitle>
           <CardDescription>
             自動反映された値も含め、保存前にいつでも編集できます
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="fullName">氏名</Label>
-            <Input
-              id="fullName"
-              name="fullName"
-              defaultValue={resume.fullName}
-              required
-            />
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="furigana">ふりがな</Label>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="furigana" className="text-muted-foreground">
+              ふりがな
+            </Label>
             <Input id="furigana" name="furigana" defaultValue={resume.furigana ?? ""} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="birthDate">生年月日</Label>
-            <Input
-              id="birthDate"
-              name="birthDate"
-              type="date"
-              defaultValue={toDateInputValue(resume.birthDate)}
-            />
+
+          <div className="max-w-xl space-y-4 rounded-lg border bg-muted/20 p-4">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">名前</Label>
+              <Input
+                id="fullName"
+                name="fullName"
+                defaultValue={resume.fullName}
+                required
+                className="text-lg font-medium"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="birthDate">生年月日：</Label>
+              <Input
+                id="birthDate"
+                name="birthDate"
+                type="date"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="gender">性別：</Label>
+              <select
+                id="gender"
+                name="gender"
+                className={selectClass}
+                defaultValue={resume.gender ?? ""}
+              >
+                <option value="">未記入</option>
+                {(Object.keys(RESUME_GENDER_LABELS) as ResumeGender[]).map((key) => (
+                  <option key={key} value={key}>
+                    {RESUME_GENDER_LABELS[key]}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="gender">性別</Label>
-            <select
-              id="gender"
-              name="gender"
-              className={selectClass}
-              defaultValue={resume.gender ?? ""}
-            >
-              <option value="">未記入</option>
-              {(Object.keys(RESUME_GENDER_LABELS) as ResumeGender[]).map((key) => (
-                <option key={key} value={key}>
-                  {RESUME_GENDER_LABELS[key]}
-                </option>
-              ))}
-            </select>
-          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="postalCode">郵便番号</Label>
             <Input
@@ -198,10 +225,11 @@ export function ResumeForm({
               ))}
             </select>
           </div>
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card id="resume-photo" className="scroll-mt-28">
         <CardHeader>
           <CardTitle>証明写真</CardTitle>
         </CardHeader>
@@ -210,16 +238,23 @@ export function ResumeForm({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card id="resume-education" className="scroll-mt-28">
         <CardHeader>
           <CardTitle>学歴</CardTitle>
+          <CardDescription>
+            生年月日から入学・卒業年月を自動入力できます。学校名は手入力で置き換えてください。
+          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <ResumeEducationInferTool
+            birthDate={birthDate}
+            onApply={applyInferredEducation}
+          />
           <ResumeEducationFields entries={education} onChange={setEducation} />
         </CardContent>
       </Card>
 
-      <Card>
+      <Card id="resume-work" className="scroll-mt-28">
         <CardHeader>
           <CardTitle>職歴</CardTitle>
         </CardHeader>
@@ -228,7 +263,7 @@ export function ResumeForm({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card id="resume-licenses" className="scroll-mt-28">
         <CardHeader>
           <CardTitle>資格・免許</CardTitle>
         </CardHeader>
@@ -237,7 +272,7 @@ export function ResumeForm({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card id="resume-pr" className="scroll-mt-28">
         <CardHeader>
           <CardTitle>自己PR・志望動機</CardTitle>
         </CardHeader>

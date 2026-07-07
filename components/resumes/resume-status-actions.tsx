@@ -8,13 +8,17 @@ import {
   markResumeDraftAction,
   markResumeReadyAction,
 } from "@/lib/actions/resumes";
-import { RESUME_STATUS_LABELS } from "@/lib/resumes/constants";
+import { RESUME_STATUS_LABELS, RESUME_STATUS_STYLES } from "@/lib/resumes/constants";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export function ResumeStatusBadge({ status }: { status: ResumeStatus }) {
   return (
-    <Badge variant={status === "READY" ? "default" : "secondary"}>
+    <Badge
+      variant="outline"
+      className={cn("border", RESUME_STATUS_STYLES[status])}
+    >
       {RESUME_STATUS_LABELS[status]}
     </Badge>
   );

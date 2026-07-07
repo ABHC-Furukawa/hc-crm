@@ -45,7 +45,9 @@ export async function buildResumePdfData(
   return {
     fullName: resume.fullName,
     furigana: resume.furigana,
-    birthDateLabel: resume.birthDate ? `${formatDate(resume.birthDate)} 生` : null,
+    birthDateLabel: resume.birthDate
+      ? `${formatDate(resume.birthDate)} 生`
+      : null,
     genderLabel: genderToPdfLabel(resume.gender),
     postalCode: resume.postalCode,
     address: resume.address,

@@ -43,6 +43,6 @@ export function buildPdfFileName(fullName: string, date = new Date()): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
-  const safe = fullName.replace(/[\\/:*?"<>|]/g, "_").trim() || "履歴書";
-  return `${safe}_履歴書_${y}${m}${d}.pdf`;
+  const safe = fullName.replace(/[\\/:*?"<>|]/g, "_").trim() || "名前未設定";
+  return `【履歴書】${safe}_${y}${m}${d}.pdf`;
 }

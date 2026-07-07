@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { getResumePickerCandidates } from "@/lib/actions/resumes";
 import { DashboardHeader } from "@/components/layout/dashboard-shell";
 import { ResumeNewForm } from "@/components/resumes/resume-new-form";
+import { ResumeWorkflowSteps } from "@/components/resumes/resume-list-filters";
 import { Button } from "@/components/ui/button";
 
 export default async function ResumeNewPage() {
@@ -18,6 +19,8 @@ export default async function ResumeNewPage() {
             一覧に戻る
           </Link>
         </Button>
+
+        <ResumeWorkflowSteps current="create" />
 
         <div className="mx-auto max-w-xl">
           <ResumeNewForm candidates={candidates} />

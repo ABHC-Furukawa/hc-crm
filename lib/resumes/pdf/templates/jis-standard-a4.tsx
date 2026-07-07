@@ -30,28 +30,48 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: "row",
+    alignItems: "flex-start",
     justifyContent: "space-between",
     borderBottomWidth: 1,
     borderBottomColor: "#333333",
-    paddingBottom: 10,
+    paddingBottom: 12,
     marginBottom: 14,
+    minHeight: 100,
   },
   headerLeft: {
     flex: 1,
-    paddingRight: 12,
+    paddingRight: 16,
+    paddingTop: 2,
+  },
+  furiganaBlock: {
+    marginBottom: 8,
   },
   furigana: {
     fontSize: 8,
     color: "#555555",
-    marginBottom: 4,
+    lineHeight: 1.5,
+  },
+  nameBlock: {
+    marginBottom: 10,
+    paddingBottom: 2,
   },
   fullName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 700,
-    marginBottom: 6,
+    lineHeight: 1.45,
+  },
+  metaBlock: {
+    marginTop: 2,
+  },
+  metaRow: {
+    marginBottom: 5,
+  },
+  metaRowLast: {
+    marginBottom: 0,
   },
   meta: {
     fontSize: 9,
+    lineHeight: 1.55,
   },
   photoBox: {
     width: 72,
@@ -196,12 +216,24 @@ export function JisStandardA4Document({ data }: { data: ResumePdfData }) {
 
         <View style={styles.headerRow}>
           <View style={styles.headerLeft}>
-            <Text style={styles.furigana}>{data.furigana || "—"}</Text>
-            <Text style={styles.fullName}>{data.fullName}</Text>
-            <Text style={styles.meta}>
-              {data.birthDateLabel || "生年月日未設定"}
-              {data.genderLabel ? ` / ${data.genderLabel}` : ""}
-            </Text>
+            <View style={styles.furiganaBlock}>
+              <Text style={styles.furigana}>{data.furigana || "—"}</Text>
+            </View>
+            <View style={styles.nameBlock}>
+              <Text style={styles.fullName}>{data.fullName}</Text>
+            </View>
+            <View style={styles.metaBlock}>
+              <View style={styles.metaRow}>
+                <Text style={styles.meta}>
+                  生年月日：{data.birthDateLabel || "未設定"}
+                </Text>
+              </View>
+              <View style={styles.metaRowLast}>
+                <Text style={styles.meta}>
+                  性別：{data.genderLabel || "未記入"}
+                </Text>
+              </View>
+            </View>
           </View>
           <View style={styles.photoBox}>
             {data.photoDataUri ? (

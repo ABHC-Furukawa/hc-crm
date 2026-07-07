@@ -32,15 +32,28 @@ export function ResumePreviewDocument({
     <div className="mx-auto max-w-[210mm] rounded-lg border bg-white p-8 text-[11px] leading-relaxed text-black shadow-sm print:border-0 print:shadow-none">
       <div className="mb-6 text-right text-sm">作成日：{today}</div>
 
-      <div className="mb-6 flex items-start justify-between gap-4 border-b pb-4">
-        <div>
-          <p className="text-sm text-gray-600">{resume.furigana || "—"}</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-wide">{resume.fullName}</h1>
-          <p className="mt-2 text-sm">
-            {resume.birthDate ? `${formatDate(resume.birthDate)} 生` : "生年月日未設定"}
-            {" / "}
-            {genderLabel}
+      <div className="mb-6 flex items-start justify-between gap-4 border-b pb-5">
+        <div className="min-h-36 flex-1">
+          <p className="text-xs leading-relaxed text-gray-600">
+            {resume.furigana || "—"}
           </p>
+          <h1 className="mt-2 text-2xl font-bold leading-snug tracking-wide">
+            {resume.fullName}
+          </h1>
+          <dl className="mt-4 space-y-2 text-sm leading-relaxed">
+            <div className="flex gap-2">
+              <dt className="shrink-0 text-gray-600">生年月日：</dt>
+              <dd>
+                {resume.birthDate
+                  ? `${formatDate(resume.birthDate)} 生`
+                  : "未設定"}
+              </dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="shrink-0 text-gray-600">性別：</dt>
+              <dd>{genderLabel}</dd>
+            </div>
+          </dl>
         </div>
         <div className="flex h-36 w-28 shrink-0 items-center justify-center border border-gray-400 bg-gray-50 text-xs text-gray-500">
           {photoDisplayUrl ? (

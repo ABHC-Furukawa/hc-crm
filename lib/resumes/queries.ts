@@ -2,6 +2,8 @@ import type { Prisma, ResumeDocumentType } from "@prisma/client";
 import type { User } from "@prisma/client";
 import { candidateAccessFilter } from "@/lib/auth/access";
 import { canViewTenantCandidates } from "@/lib/auth/rbac";
+import type { ResumeFilters } from "@/lib/resumes/filters";
+import { applyResumeFilters } from "@/lib/resumes/filters";
 import { prisma } from "@/lib/prisma";
 
 export const resumeDetailInclude = {
@@ -118,10 +120,16 @@ export async function getResumeByCandidateId(
 
 export async function getResumesForUser(
   user: User,
-  tenantId: string
+  tenantId: string,
+  filters: ResumeFilters = {}
 ): Promise<ResumeListItem[]> {
+  const where = applyResumeFilters(
+    resumeAccessWhere(user, tenantId),
+    filters
+  );
+
   return prisma.resume.findMany({
-    where: resumeAccessWhere(user, tenantId),
+    where,
     include: resumeListInclude,
     orderBy: { updatedAt: "desc" },
   });

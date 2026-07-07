@@ -11,6 +11,11 @@ export const RESUME_STATUS_LABELS: Record<ResumeStatus, string> = {
   READY: "完成",
 };
 
+export const RESUME_STATUS_STYLES: Record<ResumeStatus, string> = {
+  DRAFT: "bg-amber-100 text-amber-800 border-amber-200",
+  READY: "bg-emerald-100 text-emerald-800 border-emerald-200",
+};
+
 export const RESUME_TEMPLATE_LABELS: Record<ResumeTemplateType, string> = {
   JIS_STANDARD_A4: "JIS風 標準履歴書（A4）",
 };

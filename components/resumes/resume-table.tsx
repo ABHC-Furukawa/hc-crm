@@ -1,10 +1,9 @@
-"use client";
-
 import Link from "next/link";
+import { Download, Eye, Pencil } from "lucide-react";
 import type { ResumeListItem } from "@/lib/resumes/queries";
-import { RESUME_STATUS_LABELS } from "@/lib/resumes/constants";
+import { ResumeStatusBadge } from "@/components/resumes/resume-status-actions";
 import { formatDateTime, fullName } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -24,8 +23,9 @@ export function ResumeTable({ resumes }: { resumes: ResumeListItem[] }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border">
-      <Table>
+    <>
+      <div className="hidden overflow-x-auto rounded-lg border md:block">
+        <Table>
         <TableHeader>
           <TableRow>
             <TableHead>氏名</TableHead>
@@ -52,33 +52,80 @@ export function ResumeTable({ resumes }: { resumes: ResumeListItem[] }) {
                 )}
               </TableCell>
               <TableCell>
-                <Badge variant={resume.status === "READY" ? "default" : "secondary"}>
-                  {RESUME_STATUS_LABELS[resume.status]}
-                </Badge>
+                <ResumeStatusBadge status={resume.status} />
               </TableCell>
               <TableCell className="text-muted-foreground">
                 {formatDateTime(resume.updatedAt)}
               </TableCell>
               <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Link
-                    href={`/resumes/${resume.id}/edit`}
-                    className="text-sm text-primary hover:underline"
-                  >
-                    編集
-                  </Link>
-                  <Link
-                    href={`/resumes/${resume.id}/preview`}
-                    className="text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    プレビュー
-                  </Link>
+                <div className="flex justify-end gap-1">
+                  <Button asChild variant="ghost" size="sm">
+                    <Link href={`/resumes/${resume.id}/edit`}>
+                      <Pencil className="mr-1 h-3.5 w-3.5" />
+                      編集
+                    </Link>
+                  </Button>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link href={`/resumes/${resume.id}/preview`}>
+                      <Eye className="mr-1 h-3.5 w-3.5" />
+                      プレビュー
+                    </Link>
+                  </Button>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link
+                      href={`/api/resumes/${resume.id}/pdf?download=1`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Download className="mr-1 h-3.5 w-3.5" />
+                      PDF
+                    </Link>
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-    </div>
+      </div>
+
+      <div className="space-y-3 md:hidden">
+        {resumes.map((resume) => (
+          <div key={resume.id} className="rounded-lg border bg-card p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="font-medium">{resume.fullName}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {resume.candidate
+                    ? fullName(resume.candidate.lastName, resume.candidate.firstName)
+                    : "未紐づけ"}
+                </p>
+              </div>
+              <ResumeStatusBadge status={resume.status} />
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              更新: {formatDateTime(resume.updatedAt)}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/resumes/${resume.id}/edit`}>編集</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/resumes/${resume.id}/preview`}>プレビュー</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link
+                  href={`/api/resumes/${resume.id}/pdf?download=1`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  PDF
+                </Link>
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

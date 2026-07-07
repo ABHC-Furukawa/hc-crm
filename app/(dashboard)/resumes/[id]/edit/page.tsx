@@ -5,6 +5,7 @@ import { getResumePhotoSignedUrl } from "@/lib/resumes/storage";
 import { DashboardHeader } from "@/components/layout/dashboard-shell";
 import { ResumeForm } from "@/components/resumes/resume-form";
 import { ResumeBackLink } from "@/components/resumes/resume-nav-links";
+import { ResumeWorkflowSteps } from "@/components/resumes/resume-list-filters";
 import { ResumeStatusActions } from "@/components/resumes/resume-status-actions";
 import { RESUME_TEMPLATE_LABELS } from "@/lib/resumes/constants";
 
@@ -33,6 +34,10 @@ export default async function ResumeEditPage({
             <ResumeStatusActions resumeId={resume.id} status={resume.status} />
           </div>
         </div>
+
+        <ResumeWorkflowSteps
+          current={resume.status === "READY" ? "ready" : "edit"}
+        />
 
         <ResumeForm
           resume={resume}

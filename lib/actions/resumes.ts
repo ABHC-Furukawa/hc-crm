@@ -22,6 +22,7 @@ import {
   getResumeById,
   getResumesForUser,
 } from "@/lib/resumes/queries";
+import { parseResumeFilters } from "@/lib/resumes/filters";
 import { prisma } from "@/lib/prisma";
 import { requireTenantContext } from "@/lib/tenant/context";
 import {
@@ -65,10 +66,13 @@ function revalidateResumePaths(resumeId: string, candidateId: string | null) {
   }
 }
 
-export async function getResumeListForUser() {
+export async function getResumeListForUser(
+  params: Record<string, string | string[] | undefined> = {}
+) {
   const user = await requireSessionUser();
   const { tenantId } = await requireTenantContext();
-  return getResumesForUser(user, tenantId);
+  const filters = parseResumeFilters(params);
+  return getResumesForUser(user, tenantId, filters);
 }
 
 export async function getResumePickerCandidates() {

@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { APP_BRAND } from "@/lib/constants/app-brand";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CA CRM",
-  description: "人材紹介会社向けCA CRM",
+  title: APP_BRAND.name,
+  description: APP_BRAND.tagline,
 };
 
 export default function RootLayout({

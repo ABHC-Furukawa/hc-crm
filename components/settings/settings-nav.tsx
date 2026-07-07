@@ -19,6 +19,11 @@ const SETTINGS_NAV: SettingsNavItem[] = [
     label: "テナント一覧",
     roles: [UserRole.DEVELOP],
   },
+  {
+    href: "/settings/feedback",
+    label: "改善提案受信箱",
+    roles: [UserRole.DEVELOP],
+  },
 ];
 
 export function SettingsNav({ role }: { role: UserRole }) {

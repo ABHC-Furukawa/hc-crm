@@ -16,9 +16,11 @@ import {
   Settings,
   Radio,
   FileText,
+  Lightbulb,
   type LucideIcon,
 } from "lucide-react";
 import type { AppRouteDefinition, AppRouteId } from "@/lib/auth/navigation";
+import { APP_BRAND } from "@/lib/constants/app-brand";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -34,6 +36,7 @@ const ROUTE_ICONS: Record<AppRouteId, LucideIcon> = {
   analytics: GitBranch,
   "team-status": Radio,
   "candidates-new": UserPlus,
+  feedback: Lightbulb,
   settings: Settings,
 };
 
@@ -82,7 +85,7 @@ export function AppSidebar({ navRoutes }: { navRoutes: AppRouteDefinition[] }) {
     <aside className="hidden w-64 shrink-0 border-r bg-card md:block">
       <div className="flex h-14 items-center border-b px-6">
         <Link href="/dashboard" className="text-lg font-bold text-primary">
-          CA CRM
+          {APP_BRAND.name}
         </Link>
       </div>
       <div className="p-4">
@@ -105,7 +108,7 @@ export function MobileNav({ navRoutes }: { navRoutes: AppRouteDefinition[] }) {
       </SheetTrigger>
       <SheetContent side="left" className="w-64 p-0">
         <div className="flex h-14 items-center border-b px-6">
-          <span className="text-lg font-bold text-primary">CA CRM</span>
+          <span className="text-lg font-bold text-primary">{APP_BRAND.name}</span>
         </div>
         <div className="p-4">
           <NavLinks navRoutes={navRoutes} onNavigate={() => setOpen(false)} />

@@ -17,6 +17,7 @@ export type AppRouteId =
   | "analytics"
   | "team-status"
   | "candidates-new"
+  | "feedback"
   | "settings";
 
 export type AppRouteDefinition = {
@@ -90,6 +91,12 @@ export const APP_ROUTE_DEFINITIONS: AppRouteDefinition[] = [
     href: "/candidates/new",
     label: "新規登録",
     matchPrefix: "/candidates/new",
+  },
+  {
+    id: "feedback",
+    href: "/feedback",
+    label: "改善提案",
+    matchPrefix: "/feedback",
   },
   {
     id: "settings",

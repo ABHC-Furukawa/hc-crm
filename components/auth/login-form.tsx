@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { loginAction, type AuthActionState } from "@/lib/actions/auth";
+import { APP_BRAND } from "@/lib/constants/app-brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,8 +28,8 @@ export function LoginForm() {
   return (
     <Card className="w-full border-0 shadow-lg sm:border sm:shadow-xl">
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-bold">CA CRM</CardTitle>
-        <CardDescription>人材紹介CRMにログイン</CardDescription>
+        <CardTitle className="text-2xl font-bold">{APP_BRAND.name}</CardTitle>
+        <CardDescription>{APP_BRAND.loginDescription}</CardDescription>
       </CardHeader>
       <CardContent>
         {resetSuccess && (

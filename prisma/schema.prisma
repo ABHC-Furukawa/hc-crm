@@ -15,6 +15,12 @@ datasource db {
 // Enums
 // ─────────────────────────────────────────────
 
+enum ImprovementRequestPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
 enum UserRole {
   DEVELOP
   ADMIN
@@ -493,6 +499,7 @@ model User {
   createdResumes         Resume[]              @relation("ResumeCreator")
   updatedResumes         Resume[]              @relation("ResumeUpdater")
   resumeExports          ResumeExportLog[]     @relation("ResumeExporter")
+  improvementRequests    ImprovementRequest[]  @relation("ImprovementRequestSubmitter")
 
   @@index([tenantId])
   @@index([managerId])
@@ -1141,8 +1148,26 @@ model Tenant {
   rawJobs              RawJob[]
   jobImportLogs        JobImportLog[]
   resumes              Resume[]
+  improvementRequests  ImprovementRequest[]
 
   @@map("tenants")
+}
+
+model ImprovementRequest {
+  id            String                     @id @default(uuid()) @db.Uuid
+  tenantId      String                     @map("tenant_id") @db.Uuid
+  submittedById String                     @map("submitted_by_id") @db.Uuid
+  name          String
+  priority      ImprovementRequestPriority
+  description   String                     @db.Text
+  createdAt     DateTime                   @default(now()) @map("created_at")
+
+  tenant      Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  submittedBy User   @relation("ImprovementRequestSubmitter", fields: [submittedById], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([submittedById])
+  @@map("improvement_requests")
 }
 
 model TenantAuditLog {

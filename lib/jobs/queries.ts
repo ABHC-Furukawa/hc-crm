@@ -94,6 +94,13 @@ export async function queryJobsForPicker(
   });
 }
 
+export async function queryAllJobsForExport(tenantId: string) {
+  return prisma.job.findMany({
+    where: { tenantId },
+    orderBy: { updatedAt: "desc" },
+  });
+}
+
 export async function queryRecentJobImportLogs(tenantId: string, limit = 20) {
   return prisma.jobImportLog.findMany({
     where: { tenantId },

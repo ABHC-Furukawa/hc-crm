@@ -90,7 +90,18 @@ export function canAssignDevelopRole(role: UserRole): boolean {
   return role === UserRole.DEVELOP;
 }
 
+/** 管理者以上 — 案件一覧 CSV エクスポート */
+export function canExportJobsCsv(role: UserRole): boolean {
+  return role === UserRole.DEVELOP || role === UserRole.ADMIN;
+}
+
+/** DEVELOP のみ — 改善・要望提案の受信箱 */
+export function canViewImprovementRequests(role: UserRole): boolean {
+  return role === UserRole.DEVELOP;
+}
+
 /** DEVELOP のみ — 全 tenant を参照・切替可能（Phase 4 連携） */
 export function canCrossTenantAccess(role: UserRole): boolean {
   return role === UserRole.DEVELOP;
 }
+

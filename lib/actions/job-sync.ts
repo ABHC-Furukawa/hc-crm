@@ -11,6 +11,7 @@ import {
 } from "@/lib/jobs/sheets/company-sheet-config";
 import { queryRecentJobImportLogs } from "@/lib/jobs/queries";
 import { getSyncStatusForTenant } from "@/lib/jobs/sync-jobs";
+import { notifyJobSyncToSlack } from "@/lib/notifications/slack";
 
 export type JobSyncActionState = {
   error?: string;
@@ -70,6 +71,19 @@ export async function syncCompanyByKeyAction(
       tenantId,
       userId: user.id,
     });
+
+    try {
+      await notifyJobSyncToSlack({
+        displayName: result.displayName,
+        companyKey: result.companyKey,
+        importedCount: result.importedCount,
+        successCount: result.successCount,
+        failedCount: result.failedCount,
+        skippedClosedCount: result.skippedClosedCount,
+      });
+    } catch (slackError) {
+      console.error("[job-sync] Slack notification failed:", slackError);
+    }
 
     revalidatePath("/jobs");
     revalidatePath("/jobs/sync");

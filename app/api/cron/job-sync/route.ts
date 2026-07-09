@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { syncJobs } from "@/lib/jobs/sync-jobs";
+import { notifyJobSyncToSlack } from "@/lib/notifications/slack";
 
 /** 1タブ同期用（GitHub Actions はタブごとに呼び出す） */
 export const maxDuration = 300;
@@ -30,6 +31,21 @@ export async function GET(request: Request) {
         error: "Job sync is not configured",
         tenantId: result.tenantId,
       });
+    }
+
+    for (const row of result.results) {
+      try {
+        await notifyJobSyncToSlack({
+          displayName: row.displayName,
+          companyKey: row.companyKey,
+          importedCount: row.importedCount,
+          successCount: row.successCount,
+          failedCount: row.failedCount,
+          skippedClosedCount: row.skippedClosedCount,
+        });
+      } catch (slackError) {
+        console.error("[cron/job-sync] Slack notification failed:", slackError);
+      }
     }
 
     return NextResponse.json({
@@ -69,6 +85,23 @@ export async function POST(request: Request) {
       tenantId: body.tenantId,
       companyKey: body.companyKey,
     });
+
+    if (result.configured) {
+      for (const row of result.results) {
+        try {
+          await notifyJobSyncToSlack({
+            displayName: row.displayName,
+            companyKey: row.companyKey,
+            importedCount: row.importedCount,
+            successCount: row.successCount,
+            failedCount: row.failedCount,
+            skippedClosedCount: row.skippedClosedCount,
+          });
+        } catch (slackError) {
+          console.error("[cron/job-sync] Slack notification failed:", slackError);
+        }
+      }
+    }
 
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {

@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { syncCallLeads } from "@/lib/call-leads/sync-call-leads";
+import {
+  notifyCallLeadSyncFailedToSlack,
+  notifyCallLeadSyncToSlack,
+} from "@/lib/notifications/slack";
 
 /** 大量 chunk 取込用（Vercel Pro 上限に合わせる） */
 export const maxDuration = 300;
@@ -10,6 +14,12 @@ function authorizeCron(request: Request): boolean {
   if (!secret) return false;
   const auth = request.headers.get("authorization");
   return auth === `Bearer ${secret}`;
+}
+
+function formatSyncWindowLabel(
+  syncWindow: { message: string } | null | undefined
+): string | null {
+  return syncWindow?.message?.trim() || null;
 }
 
 export async function GET(request: Request) {
@@ -32,6 +42,11 @@ export async function GET(request: Request) {
     }
 
     if (result.error) {
+      try {
+        await notifyCallLeadSyncFailedToSlack(result.error);
+      } catch (slackError) {
+        console.error("[cron/call-lead-sync] Slack notification failed:", slackError);
+      }
       return NextResponse.json(
         { ok: false, error: result.error, tenantId: result.tenantId },
         { status: 500 }
@@ -39,6 +54,21 @@ export async function GET(request: Request) {
     }
 
     const imp = result.import!;
+    try {
+      await notifyCallLeadSyncToSlack({
+        importedCount: imp.importedCount,
+        createdCount: imp.createdCount,
+        updatedCount: imp.updatedCount,
+        duplicateCount: imp.duplicateCount,
+        outOfScopeCount: imp.outOfScopeCount,
+        skippedCount: imp.skippedCount,
+        failedCount: imp.failedCount,
+        syncWindowLabel: formatSyncWindowLabel(imp.syncWindow),
+      });
+    } catch (slackError) {
+      console.error("[cron/call-lead-sync] Slack notification failed:", slackError);
+    }
+
     return NextResponse.json({
       ok: true,
       tenantId: result.tenantId,
@@ -82,10 +112,32 @@ export async function POST(request: Request) {
     }
 
     if (result.error) {
+      try {
+        await notifyCallLeadSyncFailedToSlack(result.error);
+      } catch (slackError) {
+        console.error("[cron/call-lead-sync] Slack notification failed:", slackError);
+      }
       return NextResponse.json(
         { ok: false, error: result.error, tenantId: result.tenantId },
         { status: 500 }
       );
+    }
+
+    if (result.import) {
+      try {
+        await notifyCallLeadSyncToSlack({
+          importedCount: result.import.importedCount,
+          createdCount: result.import.createdCount,
+          updatedCount: result.import.updatedCount,
+          duplicateCount: result.import.duplicateCount,
+          outOfScopeCount: result.import.outOfScopeCount,
+          skippedCount: result.import.skippedCount,
+          failedCount: result.import.failedCount,
+          syncWindowLabel: formatSyncWindowLabel(result.import.syncWindow),
+        });
+      } catch (slackError) {
+        console.error("[cron/call-lead-sync] Slack notification failed:", slackError);
+      }
     }
 
     return NextResponse.json({ ok: true, tenantId: result.tenantId, import: result.import });

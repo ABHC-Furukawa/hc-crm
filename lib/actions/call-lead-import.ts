@@ -24,6 +24,10 @@ import {
   toValidatedImportRow,
   validateImportRow,
 } from "@/lib/validators/call-lead-import";
+import {
+  notifyCallLeadSyncFailedToSlack,
+  notifyCallLeadSyncToSlack,
+} from "@/lib/notifications/slack";
 
 export type CallLeadImportActionState = {
   error?: string;
@@ -174,6 +178,21 @@ export async function syncCallLeadsFromGoogleSheetAction(
       { tenantId, userId: user.id, assignedUserId: user.id }
     );
 
+    try {
+      await notifyCallLeadSyncToSlack({
+        importedCount: result.importedCount,
+        createdCount: result.createdCount,
+        updatedCount: result.updatedCount,
+        duplicateCount: result.duplicateCount,
+        outOfScopeCount: result.outOfScopeCount,
+        skippedCount: result.skippedCount,
+        failedCount: result.failedCount,
+        syncWindowLabel: result.syncWindow?.message?.trim() || null,
+      });
+    } catch (slackError) {
+      console.error("[call-lead-sync] Slack notification failed:", slackError);
+    }
+
     revalidatePath("/call-leads");
     revalidatePath("/call-leads/import");
 
@@ -184,6 +203,11 @@ export async function syncCallLeadsFromGoogleSheetAction(
       return { error: tenantLimitErrorMessage(e) };
     }
     const message = e instanceof Error ? e.message : "Google Sheets 同期中にエラーが発生しました";
+    try {
+      await notifyCallLeadSyncFailedToSlack(message);
+    } catch (slackError) {
+      console.error("[call-lead-sync] Slack notification failed:", slackError);
+    }
     return { error: message };
   }
 }

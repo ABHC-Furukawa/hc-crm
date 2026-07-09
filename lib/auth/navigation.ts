@@ -8,16 +8,14 @@ import { CANDIDATE_DISPLAY } from "@/lib/constants/candidate-display";
  */
 export type AppRouteId =
   | "dashboard"
-  | "candidates"
-  | "resumes"
   | "call-leads"
+  | "candidates"
   | "jobs"
-  | "communications"
+  | "resumes"
   | "kpi"
   | "analytics"
-  | "team-status"
-  | "candidates-new"
   | "feedback"
+  | "team-status"
   | "settings";
 
 export type AppRouteDefinition = {
@@ -37,23 +35,17 @@ export const APP_ROUTE_DEFINITIONS: AppRouteDefinition[] = [
     label: "TOP",
   },
   {
+    id: "call-leads",
+    href: "/call-leads",
+    label: "架電リスト",
+    matchPrefix: "/call-leads",
+  },
+  {
     id: "candidates",
     href: "/candidates",
     label: CANDIDATE_DISPLAY.listTitle,
     matchPrefix: "/candidates",
     exclude: "/candidates/new",
-  },
-  {
-    id: "resumes",
-    href: "/resumes",
-    label: "履歴書作成",
-    matchPrefix: "/resumes",
-  },
-  {
-    id: "call-leads",
-    href: "/call-leads",
-    label: "架電リスト",
-    matchPrefix: "/call-leads",
   },
   {
     id: "jobs",
@@ -62,10 +54,10 @@ export const APP_ROUTE_DEFINITIONS: AppRouteDefinition[] = [
     matchPrefix: "/jobs",
   },
   {
-    id: "communications",
-    href: "/communications",
-    label: "連絡履歴",
-    matchPrefix: "/communications",
+    id: "resumes",
+    href: "/resumes",
+    label: "履歴書作成",
+    matchPrefix: "/resumes",
   },
   {
     id: "kpi",
@@ -80,23 +72,17 @@ export const APP_ROUTE_DEFINITIONS: AppRouteDefinition[] = [
     matchPrefix: "/analytics",
   },
   {
+    id: "feedback",
+    href: "/feedback",
+    label: "改善提案",
+    matchPrefix: "/feedback",
+  },
+  {
     id: "team-status",
     href: "/team-status",
     label: "CA 稼働状況",
     roles: [UserRole.MANAGER, UserRole.ADMIN, UserRole.DEVELOP],
     matchPrefix: "/team-status",
-  },
-  {
-    id: "candidates-new",
-    href: "/candidates/new",
-    label: "新規登録",
-    matchPrefix: "/candidates/new",
-  },
-  {
-    id: "feedback",
-    href: "/feedback",
-    label: "改善提案",
-    matchPrefix: "/feedback",
   },
   {
     id: "settings",

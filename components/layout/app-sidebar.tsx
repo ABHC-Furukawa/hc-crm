@@ -6,8 +6,6 @@ import { useState } from "react";
 import {
   LayoutDashboard,
   Users,
-  UserPlus,
-  MessageSquare,
   Menu,
   PhoneCall,
   Briefcase,
@@ -27,16 +25,14 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const ROUTE_ICONS: Record<AppRouteId, LucideIcon> = {
   dashboard: LayoutDashboard,
-  candidates: Users,
-  resumes: FileText,
   "call-leads": PhoneCall,
+  candidates: Users,
   jobs: Briefcase,
-  communications: MessageSquare,
+  resumes: FileText,
   kpi: BarChart3,
   analytics: GitBranch,
-  "team-status": Radio,
-  "candidates-new": UserPlus,
   feedback: Lightbulb,
+  "team-status": Radio,
   settings: Settings,
 };
 

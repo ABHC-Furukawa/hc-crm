@@ -34,7 +34,7 @@ export const APP_ROUTE_DEFINITIONS: AppRouteDefinition[] = [
   {
     id: "dashboard",
     href: "/dashboard",
-    label: "ダッシュボード",
+    label: "TOP",
   },
   {
     id: "candidates",

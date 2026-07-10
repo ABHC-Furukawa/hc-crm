@@ -22,6 +22,7 @@ import { CANDIDATE_DUPLICATE_NOTICE_COOKIE } from "@/lib/candidates/registration
 import { requireSessionUser } from "@/lib/auth/session";
 import { requireTenantContext } from "@/lib/tenant/context";
 import { CANDIDATE_DISPLAY } from "@/lib/constants/candidate-display";
+import { isReferrableDispatchCompanyKey } from "@/lib/constants/referrable-dispatch-companies";
 import { prisma } from "@/lib/prisma";
 import {
   assertCanCreate,
@@ -245,6 +246,28 @@ export async function updateCandidateStatusAction(
   revalidatePath("/candidates");
   revalidatePath(`/candidates/${candidateId}`);
   revalidatePath("/dashboard");
+}
+
+export async function updateReferrableDispatchCompaniesAction(
+  candidateId: string,
+  keys: string[]
+) {
+  try {
+    await assertCandidateAccess(candidateId);
+  } catch {
+    return;
+  }
+
+  const nextKeys = [
+    ...new Set(keys.filter(isReferrableDispatchCompanyKey)),
+  ];
+
+  await prisma.candidate.update({
+    where: { id: candidateId },
+    data: { referrableDispatchCompanyKeys: nextKeys },
+  });
+
+  revalidatePath(`/candidates/${candidateId}`);
 }
 
 export async function getCandidatesForUser() {

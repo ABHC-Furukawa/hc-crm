@@ -570,6 +570,8 @@ model Candidate {
   nationality   String?
   visaStatus    VisaStatus? @map("visa_status")
   qualifications String[]   @default([])
+  /** 紹介可能派遣会社キー（lib/constants/referrable-dispatch-companies.ts） */
+  referrableDispatchCompanyKeys String[] @default([]) @map("referrable_dispatch_company_keys")
   hearingMemo   String?     @map("hearing_memo") @db.Text
 
   createdAt DateTime  @default(now()) @map("created_at")

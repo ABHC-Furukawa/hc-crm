@@ -9,11 +9,12 @@ import {
 } from "lucide-react";
 import type { CandidateDetail } from "@/types/candidate";
 import { CandidateStatusSelector } from "@/components/candidates/candidate-status-selector";
+import { ReferrableDispatchCompaniesPanel } from "@/components/candidates/detail/referrable-dispatch-companies-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { getCandidateSourceLabel } from "@/lib/constants/candidate-sources";
 import { displayFurigana } from "@/lib/validators/candidate";
-import { formatDateTime, fullName } from "@/lib/utils";
+import { fullName } from "@/lib/utils";
 
 export function CandidateSummaryCard({ candidate }: { candidate: CandidateDetail }) {
   return (
@@ -105,6 +106,11 @@ export function CandidateSummaryCard({ candidate }: { candidate: CandidateDetail
           <Stat icon={StickyNote} label="メモ" value={candidate._count.notes} />
           <Stat icon={Activity} label="Activity" value={candidate._count.activities} />
         </div>
+
+        <ReferrableDispatchCompaniesPanel
+          candidateId={candidate.id}
+          selectedKeys={candidate.referrableDispatchCompanyKeys}
+        />
       </CardContent>
     </Card>
   );

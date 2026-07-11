@@ -40,6 +40,8 @@ const ACTION_ICONS: Partial<
   UNASSIGNED: UserPlus,
   FILE_UPLOADED: FileText,
   DELETED: Circle,
+  INTERVIEW_PREP_UPDATED: Pencil,
+  INTERVIEW_RESULT_RECORDED: ListTodo,
 };
 
 type ActivityTimelinePanelProps = {

@@ -16,9 +16,17 @@ import { TaskListPanel } from "@/components/candidates/detail/task-list-panel";
 import { NoteListPanel } from "@/components/candidates/detail/note-list-panel";
 import { CommunicationHistoryPanel } from "@/components/candidates/detail/communication-history-panel";
 import { JobCasePanel } from "@/components/candidates/detail/job-case-panel";
+import { InterviewPrepPanel } from "@/components/candidates/detail/interview-prep-panel";
 import { ResumeSummaryPanel } from "@/components/resumes/resume-summary-panel";
 import { CandidateDuplicateNoticeBanner } from "@/components/candidates/detail/candidate-duplicate-notice-banner";
 import { getResumeSummaryForCandidate } from "@/lib/actions/resumes";
+import {
+  getInterviewPrepDayOfBody,
+  getInterviewPrepTemplateBody,
+  getOrCreateInterviewPrep,
+} from "@/lib/actions/interview-prep";
+import { canManageTenantSettings } from "@/lib/auth/rbac";
+import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { isDetailTab, type DetailTabId } from "@/lib/constants/labels";
 import { fullName } from "@/lib/utils";
@@ -70,7 +78,7 @@ export default async function CandidateDetailPage({
         })
       : null;
 
-  const { tenantId } = await requireTenantContext();
+  const { tenantId, user } = await requireTenantContext();
 
   const assignableUsers =
     activeTab === "tasks" ? await getActiveUsersForAssignment(tenantId) : [];
@@ -78,6 +86,30 @@ export default async function CandidateDetailPage({
   const resumeSummary =
     activeTab === "resume"
       ? await getResumeSummaryForCandidate(id)
+      : null;
+
+  const interviewPrep =
+    activeTab === "interview-prep"
+      ? await getOrCreateInterviewPrep(id)
+      : null;
+
+  const interviewTemplateBody =
+    activeTab === "interview-prep"
+      ? await getInterviewPrepTemplateBody(tenantId)
+      : null;
+
+  const interviewDayOfBody =
+    activeTab === "interview-prep"
+      ? await getInterviewPrepDayOfBody(tenantId)
+      : null;
+
+  const resumeForInterview =
+    activeTab === "interview-prep"
+      ? await prisma.resume.findFirst({
+          where: { candidateId: id, deletedAt: null },
+          orderBy: { updatedAt: "desc" },
+          select: { id: true, motivation: true },
+        })
       : null;
 
   return (
@@ -103,6 +135,20 @@ export default async function CandidateDetailPage({
 
             {activeTab === "profile" && <CandidateProfilePanel candidate={candidate} />}
             {activeTab === "job" && <JobCasePanel candidate={candidate} />}
+            {activeTab === "interview-prep" &&
+              interviewPrep &&
+              interviewTemplateBody != null &&
+              interviewDayOfBody != null && (
+              <InterviewPrepPanel
+                candidate={candidate}
+                preparation={interviewPrep}
+                templateBody={interviewTemplateBody}
+                dayOfBody={interviewDayOfBody}
+                resumeMotivation={resumeForInterview?.motivation ?? null}
+                hasResume={Boolean(resumeForInterview)}
+                canEditTemplate={canManageTenantSettings(user.role)}
+              />
+            )}
             {activeTab === "resume" && (
               <ResumeSummaryPanel
                 candidateId={id}

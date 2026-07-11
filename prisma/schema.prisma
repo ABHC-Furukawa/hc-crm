@@ -253,6 +253,8 @@ enum ActivityAction {
   RESUME_CREATED
   RESUME_UPDATED
   RESUME_EXPORTED
+  INTERVIEW_PREP_UPDATED
+  INTERVIEW_RESULT_RECORDED
 }
 
 enum ActivityEntityType {
@@ -272,6 +274,14 @@ enum ActivityEntityType {
   CANDIDATE_ASSIGNMENT
   USER
   RESUME
+  INTERVIEW_PREP
+}
+
+enum InterviewResultOutcome {
+  PASSED
+  ON_HOLD
+  FAILED
+  DECLINED
 }
 
 enum FileCategory {
@@ -500,6 +510,8 @@ model User {
   updatedResumes         Resume[]              @relation("ResumeUpdater")
   resumeExports          ResumeExportLog[]     @relation("ResumeExporter")
   improvementRequests    ImprovementRequest[]  @relation("ImprovementRequestSubmitter")
+  interviewResultsRecorded InterviewResult[]   @relation("InterviewResultRecorder")
+  interviewPrepTemplatesUpdated InterviewPrepTemplate[] @relation("InterviewPrepTemplateUpdater")
 
   @@index([tenantId])
   @@index([managerId])
@@ -593,6 +605,7 @@ model Candidate {
   jobCases         CandidateJobCase[]
   convertedFromCallLeads CallLead[] @relation("CallLeadConversion")
   resumes          Resume[]
+  interviewPreparation InterviewPreparation?
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -651,10 +664,89 @@ model CandidateJobCase {
 
   candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   job       Job?      @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  interviewPreparationsAsDisplay InterviewPreparation[] @relation("InterviewPrepDisplayJobCase")
 
   @@index([candidateId])
   @@index([jobId])
   @@map("candidate_job_cases")
+}
+
+// ─────────────────────────────────────────────
+// InterviewPreparation — 面接対策（Candidate 1:1）
+// ─────────────────────────────────────────────
+
+model InterviewPreparation {
+  id               String  @id @default(uuid()) @db.Uuid
+  candidateId      String  @unique @map("candidate_id") @db.Uuid
+  displayJobCaseId String? @map("display_job_case_id") @db.Uuid
+  interviewUrl     String? @map("interview_url")
+
+  checklistInterviewAt  Boolean @default(false) @map("checklist_interview_at")
+  checklistUrl          Boolean @default(false) @map("checklist_url")
+  checklistResume       Boolean @default(false) @map("checklist_resume")
+  checklistAttire       Boolean @default(false) @map("checklist_attire")
+  checklistBelongings   Boolean @default(false) @map("checklist_belongings")
+  checklistSms          Boolean @default(false) @map("checklist_sms")
+
+  memo String? @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  candidate      Candidate          @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  displayJobCase CandidateJobCase?  @relation("InterviewPrepDisplayJobCase", fields: [displayJobCaseId], references: [id], onDelete: SetNull)
+  questions      InterviewQuestion[]
+  result         InterviewResult?
+
+  @@index([displayJobCaseId])
+  @@map("interview_preparations")
+}
+
+model InterviewQuestion {
+  id            String  @id @default(uuid()) @db.Uuid
+  preparationId String  @map("preparation_id") @db.Uuid
+  sortOrder     Int     @map("sort_order")
+  title         String
+  guidance      String  @db.Text
+  answerMemo    String? @map("answer_memo") @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  preparation InterviewPreparation @relation(fields: [preparationId], references: [id], onDelete: Cascade)
+
+  @@index([preparationId, sortOrder])
+  @@map("interview_questions")
+}
+
+model InterviewResult {
+  id            String                  @id @default(uuid()) @db.Uuid
+  preparationId String                  @unique @map("preparation_id") @db.Uuid
+  outcome       InterviewResultOutcome
+  note          String?                 @db.Text
+  recordedById  String?                 @map("recorded_by_id") @db.Uuid
+  recordedAt    DateTime                @default(now()) @map("recorded_at")
+  updatedAt     DateTime                @updatedAt @map("updated_at")
+
+  preparation InterviewPreparation @relation(fields: [preparationId], references: [id], onDelete: Cascade)
+  recordedBy  User?                @relation("InterviewResultRecorder", fields: [recordedById], references: [id], onDelete: SetNull)
+
+  @@index([recordedById])
+  @@map("interview_results")
+}
+
+model InterviewPrepTemplate {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @unique @map("tenant_id") @db.Uuid
+  bodyMarkdown String   @map("body_markdown") @db.Text
+  updatedById  String?  @map("updated_by_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  updatedBy User?  @relation("InterviewPrepTemplateUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedById])
+  @@map("interview_prep_templates")
 }
 
 // ─────────────────────────────────────────────
@@ -1151,6 +1243,7 @@ model Tenant {
   jobImportLogs        JobImportLog[]
   resumes              Resume[]
   improvementRequests  ImprovementRequest[]
+  interviewPrepTemplate InterviewPrepTemplate?
 
   @@map("tenants")
 }

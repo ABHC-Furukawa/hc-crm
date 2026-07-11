@@ -33,6 +33,37 @@ export function formatActivityMetadata(
     return "案件情報を更新";
   }
 
+  if (action === "INTERVIEW_RESULT_RECORDED" && "outcome" in data) {
+    const outcome = String(data.outcome);
+    const labels: Record<string, string> = {
+      PASSED: "合格",
+      ON_HOLD: "保留",
+      FAILED: "不合格",
+      DECLINED: "辞退",
+    };
+    const label = labels[outcome] ?? outcome;
+    if ("from" in data) {
+      const from = labels[String(data.from)] ?? String(data.from);
+      return `${from} → ${label}`;
+    }
+    return `面接結果: ${label}`;
+  }
+
+  if (action === "INTERVIEW_PREP_UPDATED" && "field" in data) {
+    const field = String(data.field);
+    if (field === "created") return "面接対策を開始";
+    if (field === "questionAnswer" && "title" in data) {
+      return `回答メモ: ${String(data.title)}`;
+    }
+    if (field.startsWith("checklist")) {
+      const checked = data.checked === true ? "完了" : "未完了";
+      return `チェックリスト (${checked})`;
+    }
+    if (field === "interviewUrl") return "面接URLを更新";
+    if (field === "memo") return "面接メモを更新";
+    return `面接対策を更新 (${field})`;
+  }
+
   if ("title" in data && typeof data.title === "string") {
     return data.title;
   }

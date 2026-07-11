@@ -14,6 +14,7 @@ type SettingsNavItem = {
 const SETTINGS_NAV: SettingsNavItem[] = [
   { href: "/settings/tenant", label: "組織情報" },
   { href: "/settings/members", label: "メンバー" },
+  { href: "/settings/interview-prep", label: "面接対策テンプレート" },
   {
     href: "/settings/tenants",
     label: "テナント一覧",

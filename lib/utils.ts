@@ -5,11 +5,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** 画面表示は JST 固定（Vercel=UTC でもハイドレーション不一致を防ぐ） */
+const APP_TIME_ZONE = "Asia/Tokyo";
+
 export function formatDate(date: Date | string): string {
   return new Intl.DateTimeFormat("ja-JP", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
+    timeZone: APP_TIME_ZONE,
   }).format(new Date(date));
 }
 
@@ -20,6 +24,7 @@ export function formatDateTime(date: Date | string): string {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: APP_TIME_ZONE,
   }).format(new Date(date));
 }
 
@@ -30,6 +35,7 @@ export function formatCompactDateTime(date: Date | string): string {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: APP_TIME_ZONE,
   }).format(new Date(date));
 }
 

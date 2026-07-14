@@ -118,3 +118,118 @@ export async function queryLatestImportLogByCompany(
     orderBy: { importedAt: "desc" },
   });
 }
+
+export const JOB_MAP_LIMIT = 800;
+
+export type JobMapItem = {
+  id: string;
+  jobTitle: string;
+  companyName: string;
+  location: string | null;
+  latitude: number;
+  longitude: number;
+  referralFee: string | null;
+  sourceCompany: string;
+  recruitmentStatus: string;
+};
+
+export type JobMapResult = {
+  markers: JobMapItem[];
+  totalMatched: number;
+  truncated: boolean;
+  pendingGeocodeCount: number;
+  failedGeocodeCount: number;
+  noLocationCount: number;
+};
+
+export async function queryJobsForMap(
+  tenantId: string,
+  filters: JobFilters
+): Promise<JobMapResult> {
+  const where = buildJobListWhere(tenantId, filters);
+
+  const [totalMatched, withCoords, pendingGeocodeCount, failedGeocodeCount, noLocationCount] =
+    await Promise.all([
+      prisma.job.count({ where }),
+      prisma.job.findMany({
+        where: {
+          AND: [
+            where,
+            { latitude: { not: null } },
+            { longitude: { not: null } },
+            { geocodeStatus: "OK" },
+          ],
+        },
+        orderBy: { updatedAt: "desc" },
+        take: JOB_MAP_LIMIT,
+        select: {
+          id: true,
+          jobTitle: true,
+          companyName: true,
+          location: true,
+          latitude: true,
+          longitude: true,
+          referralFee: true,
+          sourceCompany: true,
+          recruitmentStatus: true,
+        },
+      }),
+      prisma.job.count({
+        where: {
+          AND: [
+            where,
+            { location: { not: null } },
+            { NOT: { location: "" } },
+            {
+              OR: [
+                { latitude: null },
+                { longitude: null },
+                { geocodeStatus: null },
+              ],
+            },
+          ],
+        },
+      }),
+      prisma.job.count({
+        where: {
+          AND: [
+            where,
+            { geocodeStatus: { in: ["ZERO_RESULTS", "ERROR"] } },
+          ],
+        },
+      }),
+      prisma.job.count({
+        where: {
+          AND: [
+            where,
+            {
+              OR: [{ location: null }, { location: "" }],
+            },
+          ],
+        },
+      }),
+    ]);
+
+  const markers: JobMapItem[] = withCoords
+    .filter((j) => j.latitude != null && j.longitude != null)
+    .map((j) => ({
+      id: j.id,
+      jobTitle: j.jobTitle,
+      companyName: j.companyName,
+      location: j.location,
+      latitude: j.latitude!,
+      longitude: j.longitude!,
+      referralFee: j.referralFee,
+      sourceCompany: j.sourceCompany,
+      recruitmentStatus: j.recruitmentStatus,
+    }));
+
+  return {
+    markers,
+    totalMatched,
+    truncated: totalMatched > JOB_MAP_LIMIT,
+    pendingGeocodeCount,
+    failedGeocodeCount,
+    noLocationCount,
+  };
+}

@@ -1544,6 +1544,11 @@ model Job {
   sourceCompany     String               @map("source_company")
   sourceSheet       String               @map("source_sheet")
   rawJobId          String?              @map("raw_job_id") @db.Uuid
+  latitude          Float?
+  longitude         Float?
+  geocodedAt        DateTime?            @map("geocoded_at")
+  geocodeStatus     String?              @map("geocode_status")
+  geocodeQuery      String?              @map("geocode_query")
   createdAt         DateTime             @default(now()) @map("created_at")
   updatedAt         DateTime             @updatedAt @map("updated_at")
 
@@ -1558,6 +1563,7 @@ model Job {
   @@index([tenantId, gender])
   @@index([tenantId, recruitmentStatus])
   @@index([tenantId, updatedAt(sort: Desc)])
+  @@index([tenantId, geocodeStatus])
   @@map("jobs")
 }
 

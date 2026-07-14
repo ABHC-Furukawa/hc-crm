@@ -1,4 +1,4 @@
-import { EmploymentType, type Prisma } from "@prisma/client";
+import { EmploymentType, JobRecruitmentStatus, type Prisma } from "@prisma/client";
 import { JOB_PAGE_SIZE } from "@/lib/jobs/constants";
 
 export type JobFilters = {
@@ -9,6 +9,8 @@ export type JobFilters = {
   shiftType?: string;
   salary?: string;
   referralFee?: string;
+  /** マップ用: OPEN のみ */
+  openOnly?: boolean;
   page?: number;
   sort?: JobSortField;
   order?: "asc" | "desc";
@@ -64,6 +66,7 @@ export function parseJobFilters(
     shiftType: get("shiftType"),
     salary: get("salary"),
     referralFee: get("referralFee"),
+    openOnly: get("openOnly") === "1" || get("openOnly") === "true",
     page: parsePageParam(get("page")),
     sort:
       sort && VALID_SORT_FIELDS.has(sort) ? (sort as JobSortField) : "updatedAt",
@@ -109,6 +112,9 @@ export function buildJobListWhere(
   }
   if (filters.referralFee) {
     where.referralFee = { contains: filters.referralFee, mode: "insensitive" };
+  }
+  if (filters.openOnly) {
+    where.recruitmentStatus = JobRecruitmentStatus.OPEN;
   }
 
   return where;

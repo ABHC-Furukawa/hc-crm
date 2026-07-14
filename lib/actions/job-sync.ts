@@ -11,6 +11,7 @@ import {
 } from "@/lib/jobs/sheets/company-sheet-config";
 import { queryRecentJobImportLogs } from "@/lib/jobs/queries";
 import { getSyncStatusForTenant } from "@/lib/jobs/sync-jobs";
+import { geocodePendingJobsForTenant } from "@/lib/jobs/geocode";
 import { notifyJobSyncToSlack } from "@/lib/notifications/slack";
 
 export type JobSyncActionState = {
@@ -85,8 +86,15 @@ export async function syncCompanyByKeyAction(
       console.error("[job-sync] Slack notification failed:", slackError);
     }
 
+    try {
+      await geocodePendingJobsForTenant(tenantId, 40);
+    } catch (geocodeError) {
+      console.error("[job-sync] geocode after sync failed:", geocodeError);
+    }
+
     revalidatePath("/jobs");
     revalidatePath("/jobs/sync");
+    revalidatePath("/jobs/map");
 
     const removed = result.removedCount ?? 0;
     const skippedClosed = result.skippedClosedCount ?? 0;

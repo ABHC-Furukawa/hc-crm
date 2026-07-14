@@ -7,6 +7,7 @@ import {
 } from "@/lib/jobs/sheets/company-sheet-config";
 import { jobImportService } from "@/lib/jobs/import/job-import-service";
 import type { JobImportContext, JobImportResult } from "@/lib/jobs/import/types";
+import { geocodePendingJobsForTenant } from "@/lib/jobs/geocode";
 import { prisma } from "@/lib/prisma";
 
 export type SyncJobsOptions = {
@@ -39,6 +40,11 @@ export async function syncJobs(options: SyncJobsOptions = {}): Promise<SyncJobsC
 
   if (options.companyKey) {
     const result = await jobImportService.syncByCompanyKey(options.companyKey, context);
+    try {
+      await geocodePendingJobsForTenant(tenantId, 40);
+    } catch (error) {
+      console.error("[sync-jobs] geocode after sync failed:", error);
+    }
     return {
       tenantId,
       configured: true,
@@ -48,6 +54,11 @@ export async function syncJobs(options: SyncJobsOptions = {}): Promise<SyncJobsC
   }
 
   const results = await jobImportService.syncAll(context);
+  try {
+    await geocodePendingJobsForTenant(tenantId, 80);
+  } catch (error) {
+    console.error("[sync-jobs] geocode after sync failed:", error);
+  }
   return {
     tenantId,
     configured: true,

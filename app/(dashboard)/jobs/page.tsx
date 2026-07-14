@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { RefreshCw } from "lucide-react";
 import { getJobsForUser } from "@/lib/actions/jobs";
@@ -9,6 +10,7 @@ import { JobCsvDownloadButton } from "@/components/jobs/job-csv-download-button"
 import { JobFilters } from "@/components/jobs/job-filters";
 import { JobPagination } from "@/components/jobs/job-pagination";
 import { JobTable } from "@/components/jobs/job-table";
+import { JobsMapOpenButton } from "@/components/jobs/jobs-map-open-button";
 import { Button } from "@/components/ui/button";
 
 export default async function JobsPage({
@@ -35,6 +37,15 @@ export default async function JobsPage({
           </p>
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             {canExport && <JobCsvDownloadButton />}
+            <Suspense
+              fallback={
+                <Button variant="outline" className="w-full sm:w-auto" disabled>
+                  マップで見る
+                </Button>
+              }
+            >
+              <JobsMapOpenButton />
+            </Suspense>
             <Button asChild variant="outline" className="w-full sm:w-auto">
               <Link href="/jobs/sync">
                 <RefreshCw className="mr-2 h-4 w-4" />
